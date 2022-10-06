@@ -477,13 +477,13 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 	if (!silence) {
 		
 		printf("input features: ");
-		for (int i = 0; i < NB_FEATURES; i++) printf("%lf ", features[i]);
+		for (int j = 0; j < NB_FEATURES; j++) printf("%lf ", features[j]);
 		printf("\n");
 
 		compute_rnn(&st->rnn, g, &vad_prob, features);
 
 		printf("output gain: ");
-		for (int i = 0; i < NB_BANDS; i++) printf("%lf ", g[i]);
+		for (int j = 0; j < NB_BANDS; j++) printf("%lf ", g[j]);
 		printf("\n\n");
 
 		pitch_filter(X, P, Ex, Ep, Exp, g);
