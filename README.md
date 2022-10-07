@@ -23,7 +23,7 @@
   + sudo apt-get install autoconf  
   + sudo apt-get install libtool  
   
-+ ffmpeg  
++ ffmpeg - 음성 데이터의 변환  
   + ffmpeg -i input_wav.wav -f s16le -acodec pcm_s16le -ar 48k input_pcm.pcm  
   + ffmpeg -f s16le -acodec pcm_s16le -ar 48k -i output_pcm.pcm output_wav.wav  
 
