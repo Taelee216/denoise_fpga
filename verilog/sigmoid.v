@@ -1,3 +1,4 @@
+/*
 module sigmoid(X,Y);
 	parameter DATA_WIDTH = 16;
 	parameter FRACT_WIDTH = 8;
@@ -16,7 +17,7 @@ module sigmoid(X,Y);
 
 
 endmodule
-
+*/
 `timescale 1ns / 1ps
 //note that the data in must be 5 bit number 1's compliment number i.e, +14.00 to -14.00
 
@@ -81,7 +82,7 @@ always@(posedge clk) begin
     end
     else begin
         if(do_math) begin
-                 data_out_internal <= {add[14:5]};
+                data_out_internal <= {add[14:5]};
         end
         else begin
             if(data_in_internal[integer_dataWidth_i-1]) begin
