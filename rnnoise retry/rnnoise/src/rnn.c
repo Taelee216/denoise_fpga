@@ -219,8 +219,8 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 		static const DenseLayer vad_output = {
 			vad_output_bias				[1],
 			vad_output_weights			[24],
-			24, 
-			1, 
+			int nb_inputs				24, 
+			int nb_neurons				1, 
 			ACTIVATION_SIGMOID
 		};
 	*/
@@ -233,8 +233,8 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 			noise_gru_bias				[144],
 			noise_gru_weights			[12960],
 			noise_gru_recurrent_weights	[6912],
-			90, 
-			48, 
+			int nb_inputs				90, 
+			int nb_neurons				48, 
 			ACTIVATION_RELU
 		};
 	*/
@@ -248,8 +248,8 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 			denoise_gru_bias			[288],
 			denoise_gru_weights			[32832],
 			denoise_gru_recurrent_weights	[27648],
-			114, 
-			96, 
+			int nb_inputs				114, 
+			int nb_neurons				96, 
 			ACTIVATION_RELU
 		};
 	*/
@@ -258,8 +258,8 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 		static const DenseLayer denoise_output = {
 			denoise_output_bias			[22],
 			denoise_output_weights		[2112],
-			96, 
-			22, 
+			int nb_inputs				96, 
+			int nb_neurons				22, 
 			ACTIVATION_SIGMOID
 		};
 	*/
