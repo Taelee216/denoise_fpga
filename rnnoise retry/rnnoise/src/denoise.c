@@ -1,28 +1,28 @@
 /* Copyright (c) 2018 Gregor Richards
  * Copyright (c) 2017 Mozilla */
 /*
-	 Redistribution and use in source and binary forms, with or without
-	 modification, are permitted provided that the following conditions
-	 are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions
+	are met:
 
-	 - Redistributions of source code must retain the above copyright
-	 notice, this list of conditions and the following disclaimer.
+	- Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
 
-	 - Redistributions in binary form must reproduce the above copyright
-	 notice, this list of conditions and the following disclaimer in the
-	 documentation and/or other materials provided with the distribution.
+	- Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
-	 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	 ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-	 A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
-	 CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-	 EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-	 PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-	 PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-	 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-	 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+	``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+	A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+	CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+	EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+	PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+	PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+	LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #ifdef HAVE_CONFIG_H
@@ -71,8 +71,8 @@ extern const struct RNNModel rnnoise_model_orig;
 
 
 static const opus_int16 eband5ms[] = {
-/*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 20k*/
-	0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100
+/*	0	0.2	0.4	0.6	0.8	1	1.2	1.4	1.6	2	2.4	2.8	3.2	4	4.8	5.6	6.8	8	9.6	12	15.6	20k*/
+		0,	1,	2,	3,	4,	5,	6,	7,	8,	10,	12,	14,	16,	20,	24,	28,	34,	40,	48,	60,	78,	100
 };
 
 
@@ -307,8 +307,7 @@ static void frame_analysis(DenoiseState *st, kiss_fft_cpx *X, float *Ex, const f
 	compute_band_energy(Ex, X);
 }
 
-static int compute_frame_features(DenoiseState *st, kiss_fft_cpx *X, kiss_fft_cpx *P,
-																	float *Ex, float *Ep, float *Exp, float *features, const float *in) {
+static int compute_frame_features(DenoiseState *st, kiss_fft_cpx *X, kiss_fft_cpx *P, float *Ex, float *Ep, float *Exp, float *features, const float *in) {
 	int i;
 	float E = 0;
 	float *ceps_0, *ceps_1, *ceps_2;
@@ -326,12 +325,10 @@ static int compute_frame_features(DenoiseState *st, kiss_fft_cpx *X, kiss_fft_cp
 	RNN_COPY(&st->pitch_buf[PITCH_BUF_SIZE-FRAME_SIZE], in, FRAME_SIZE);
 	pre[0] = &st->pitch_buf[0];
 	pitch_downsample(pre, pitch_buf, PITCH_BUF_SIZE, 1);
-	pitch_search(pitch_buf+(PITCH_MAX_PERIOD>>1), pitch_buf, PITCH_FRAME_SIZE,
-							 PITCH_MAX_PERIOD-3*PITCH_MIN_PERIOD, &pitch_index);
+	pitch_search(pitch_buf+(PITCH_MAX_PERIOD>>1), pitch_buf, PITCH_FRAME_SIZE, PITCH_MAX_PERIOD-3*PITCH_MIN_PERIOD, &pitch_index);
 	pitch_index = PITCH_MAX_PERIOD-pitch_index;
 
-	gain = remove_doubling(pitch_buf, PITCH_MAX_PERIOD, PITCH_MIN_PERIOD,
-					PITCH_FRAME_SIZE, &pitch_index, st->last_period, st->last_gain);
+	gain = remove_doubling(pitch_buf, PITCH_MAX_PERIOD, PITCH_MIN_PERIOD, PITCH_FRAME_SIZE, &pitch_index, st->last_period, st->last_gain);
 	st->last_period = pitch_index;
 	st->last_gain = gain;
 	for (i=0;i<WINDOW_SIZE;i++)
@@ -419,8 +416,7 @@ static void biquad(float *y, float mem[2], const float *x, const float *b, const
 	}
 }
 
-void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const float *Ep,
-									const float *Exp, const float *g) {
+void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const float *Ep, const float *Exp, const float *g) {
 	int i;
 	float r[NB_BANDS];
 	float rf[FREQ_SIZE] = {0};
@@ -454,7 +450,7 @@ void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const
 		X[i].i *= normf[i];
 	}
 }
-int cnt = 0;
+
 float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 	int i;
 	kiss_fft_cpx X[FREQ_SIZE];
@@ -475,7 +471,7 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 	if (!silence) {
 		compute_rnn(&st->rnn, g, &vad_prob, features);
 
-		FILE *fp; cnt++;
+		FILE *fp;
 		fp = fopen("feat_gain_int.txt", "ab");
 		// fprintf(fp, "%d: input features\n", cnt);
 		for (int j = 0; j < NB_FEATURES; j++) fprintf(fp, "%lf ", features[j]);
@@ -506,6 +502,7 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 			X[i].i *= gf[i];
 		}
 #endif
+
 	}
 
 	frame_synthesis(st, out, X);
