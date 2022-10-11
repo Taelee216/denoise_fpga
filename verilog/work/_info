@@ -10,7 +10,7 @@ z2
 cModel Technology
 d/home/yoon/intelFPGA/20.1/modelsim_ase/bin
 vrelu
-Z0 !s110 1665524186
+Z0 !s110 1665525241
 !i10b 1
 !s100 NLD7oi=?J;aB97BIRldMM3
 Z1 !s11b Dg1SIo80bB@j0V0VzS_@n1
@@ -20,13 +20,13 @@ Z3 d/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog
 Z4 w1665506863
 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v
 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v
-!i122 0
+!i122 16
 L0 12 6
 Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1665524186.000000
+Z6 !s108 1665525241.000000
 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v|
 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v|
 !i113 1
@@ -43,7 +43,7 @@ R3
 R4
 Z9 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v
 Z10 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v
-!i122 1
+!i122 17
 L0 20 30
 R5
 r1
@@ -66,7 +66,7 @@ R3
 R4
 R9
 R10
-!i122 1
+!i122 17
 L0 53 86
 R5
 r1
@@ -89,7 +89,7 @@ R3
 Z13 w1665494233
 Z14 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v
 Z15 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v
-!i122 2
+!i122 18
 L0 1 61
 R5
 r1
@@ -112,7 +112,7 @@ R3
 R13
 R14
 R15
-!i122 2
+!i122 18
 L0 66 81
 R5
 r1
@@ -135,7 +135,7 @@ R3
 w1665452420
 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tansig.v
 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tansig.v
-!i122 3
+!i122 19
 L0 1 9
 R5
 r1

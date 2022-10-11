@@ -5,8 +5,8 @@ module dense1 ( denseout, in, clk ); //42 -> 24
 	reg 	[        float-1 : 0] 	input_dense_bias_array[23:0];
 	wire	[   (24*float)-1 : 0]	input_dense_bias;
 
-	reg 	[        float-1 : 0] 	input_dense_weight_array[1007:0];
-	wire	[ (1008*float)-1 : 0]	input_dense_weight;
+	reg 	[        float-1 : 0] 	input_dense_weights_array[1007:0];
+	wire	[ (1008*float)-1 : 0]	input_dense_weights;
 
 	output	[   (24*float)-1 : 0]	denseout;
 	input	[   (42*float)-1 : 0]	in;
@@ -1089,7 +1089,7 @@ module dense1 ( denseout, in, clk ); //42 -> 24
 			sum <= sum + input_dense_bias[index1*float +: 32];
 
 			if(index2 < nb_neurons) begin
-				tmpsum	<= input_dense_weight[(index2*stride+index1)*float +:32] * in[index2*float +: 32];
+				tmpsum	<= input_dense_weights[(index2*stride+index1)*float +:32] * in[index2*float +: 32];
 				sum	=  tmpsum + sum;
 				index2	<= index2 + 1;
 			end
@@ -1115,8 +1115,8 @@ module dense2 ( vad, vad_gru_state, clk ); //24 -> 1
 	reg 	[        float-1 : 0] 	vad_output_bias_array;
 	wire	[        float-1 : 0]	vad_output_bias;
 
-	reg 	[        float-1 : 0] 	vad_output_weight_array[23:0];
-	wire	[   (24*float)-1 : 0]	vad_output_weight;
+	reg 	[        float-1 : 0] 	vad_output_weights_array[23:0];
+	wire	[   (24*float)-1 : 0]	vad_output_weights;
 
 
 	output	[        float-1 : 0]	vad;
@@ -1221,11 +1221,11 @@ module dense3 ( gains, denoise_gru_state, clk ); // 96 -> 22
 	reg 	        [float-1 : 0] 	denoise_output_bias_array[21:0];
 	wire	[   (22*float)-1 : 0]	denoise_output_bias;
 
-	reg 	[        float-1 : 0] 	denoise_output_weight_array[2111:0];
-	wire	[ (2112*float)-1 : 0]	denoise_output_weight;
+	reg 	[        float-1 : 0] 	denoise_output_weights_array[2111:0];
+	wire	[ (2112*float)-1 : 0]	denoise_output_weights;
 
 	output	[   (22*float)-1 : 0]	gains;
-	input	[   (96*float)-1 : 0]	denoise_gru_state;
+	input	[   (96*float)-1 : 0]	denoise_output_state;
 	input 							clk;
 
 	integer 						nb_input, nb_neurons, stride;
