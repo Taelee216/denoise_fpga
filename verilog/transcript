@@ -1,0 +1,9 @@
+# Loading project denoise_fpga
+# Compile of computedense.v failed with 15 errors.
+# Compile of computegru.v failed with 7 errors.
+# Compile of relu.v failed with 2 errors.
+# Compile of sigmoid.v was successful with warnings.
+# Compile of tanh.v was successful.
+# Compile of tansig.v was successful.
+# Compile of topmodule.v failed with 6 errors.
+# 7 compiles, 4 failed with 30 errors.

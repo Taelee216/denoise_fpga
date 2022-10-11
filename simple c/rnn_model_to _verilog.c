@@ -11037,10 +11037,10 @@ int main() {
 
 
 ///////////////////////////////////////////////////////////////////////////     vad_gru_weights
-	f_out	= fopen("vad_gru_weights.txt", "w");
+	f_out	= fopen("vad_gru_input_weights.txt", "w");
 	size    = sizeof(vad_gru_weights) / sizeof(vad_gru_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tvad_gru_weights_array[%5d] = 32'b", i);
+		fprintf(f_out, "assign\tvad_gru_input_weights_array[%5d] = 32'b", i);
 		out_float(vad_gru_weights[i]);
 		fprintf(f_out, ";\n");
 	}
@@ -11068,10 +11068,10 @@ int main() {
 
 
 /////////////////////////////////////////////////////////////////////////// noise_gru_weights
-	f_out = fopen("noise_gru_weights.txt", "w");
+	f_out = fopen("noise_gru_input_weights.txt", "w");
 	size = sizeof(noise_gru_weights) / sizeof(noise_gru_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tnoise_gru_weights_array[%5d] = 32'b", i);
+		fprintf(f_out, "assign\tnoise_gru_input_weights_array[%5d] = 32'b", i);
 		out_float(noise_gru_weights[i]);
 		fprintf(f_out, ";\n");
 	}
@@ -11100,10 +11100,10 @@ int main() {
 
 
 /////////////////////////////////////////////////////////////////////////// denoise_gru_weights
-	f_out = fopen("denoise_gru_weights.txt", "w");
+	f_out = fopen("denoise_gru_input_weights.txt", "w");
 	size = sizeof(denoise_gru_weights) / sizeof(denoise_gru_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tdenoise_gru_weights_array[%5d] = 32'b", i);
+		fprintf(f_out, "assign\tdenoise_gru_input_weights_array[%5d] = 32'b", i);
 		out_float(denoise_gru_weights[i]);
 		fprintf(f_out, ";\n");
 	}
