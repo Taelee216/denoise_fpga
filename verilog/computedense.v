@@ -1,28 +1,24 @@
-module dense1 ( denseout, in, clk); //42 -> 24
+module dense1 ( denseout, in, clk ); //42 -> 24
 
 	parameter 			float = 32;
 
-	input 				clk;
+	reg 	[        float-1 : 0] 	input_dense_bias_array[23:0];
+	wire	[   (24*float)-1 : 0]	input_dense_bias;
 
-	
-	reg 	[float-1:0] 		input_dense_bias_array[23:0];
-	wire	[(24*float)-1 : 0]	input_dense_bias;
+	reg 	[        float-1 : 0] 	input_dense_weight_array[1007:0];
+	wire	[ (1008*float)-1 : 0]	input_dense_weight;
 
-	reg 	[float-1:0] 		input_dense_weight_array[1007:0];
-	wire	[(1008*float)-1 : 0]	input_dense_weight;
+	output	[   (24*float)-1 : 0]	denseout;
+	input	[   (42*float)-1 : 0]	in;
+	input 							clk;
 
+	integer							nb_input, nb_neurons, stride;
+	integer							index1, index2;
 
-
-	output	[(24*float)-1 : 0]	denseout;
-	input	[(42*float)-1 : 0]	in;
-
-	integer						nb_input, nb_neurons, stride;
-	integer						index1, index2;
-
-	reg		[     float-1 : 0] 	sum;
-	reg		[     float-1 : 0]	tmpsum;
-	reg		[(24*float)-1 : 0]	tmpout;
-	reg		[     float-1 : 0]	weight_scale; // 1.f/256
+	reg		[        float-1 : 0] 	sum;
+	reg		[        float-1 : 0]	tmpsum;
+	reg		[   (24*float)-1 : 0]	tmpout;
+	reg		[        float-1 : 0]	weight_scale; // 1.f/256
 
 
 	assign	input_dense_bias_array[    0] = 32'b01000010000110000000000000000000;
@@ -1112,29 +1108,28 @@ endmodule
 
 
 
-module dense2 ( vad, vad_gru_state, clk); //24 -> 1
+module dense2 ( vad, vad_gru_state, clk ); //24 -> 1
 
 	parameter 			float = 32;
-	
-	input				clk;
 
-	reg 	[float-1 : 0] 		vad_output_bias_array;
-	wire	[float-1 : 0]		vad_output_bias;
+	reg 	[        float-1 : 0] 	vad_output_bias_array;
+	wire	[        float-1 : 0]	vad_output_bias;
 
-	reg 	[float-1:0] 		vad_output_weight_array[23:0];
-	wire	[(24*float)-1 : 0]	vad_output_weight;
+	reg 	[        float-1 : 0] 	vad_output_weight_array[23:0];
+	wire	[   (24*float)-1 : 0]	vad_output_weight;
 
 
-	output	[     float-1 : 0]	vad;
-	input 	[(24*float)-1 : 0]	vad_gru_state;
+	output	[        float-1 : 0]	vad;
+	input 	[   (24*float)-1 : 0]	vad_gru_state;
+	input 							clk;
 
-	integer 			nb_input, nb_neurons, stride;
-	integer 			index1, index2;
+	integer 						nb_input, nb_neurons, stride;
+	integer 						index1, index2;
 
-	reg	[     float-1 : 0]	sum;
-	reg	[     float-1 : 0]	tmpsum;
-	reg	[     float-1 : 0]	tmpout;
-	reg	[     float-1 : 0]	weight_scale; // 1.f/256
+	reg		[        float-1 : 0]	sum;
+	reg		[        float-1 : 0]	tmpsum;
+	reg		[        float-1 : 0]	tmpout;
+	reg		[        float-1 : 0]	weight_scale; // 1.f/256
 
 
 
@@ -1223,22 +1218,23 @@ module dense3 ( gains, denoise_gru_state, clk ); // 96 -> 22
 
 	input 			clk;
 
-	reg 	[float-1 : 0] 		denoise_output_bias_array[21:0];
-	wire	[(22*float)-1 : 0]	denoise_output_bias;
+	reg 	        [float-1 : 0] 	denoise_output_bias_array[21:0];
+	wire	[   (22*float)-1 : 0]	denoise_output_bias;
 
-	reg 	[float-1:0] 		denoise_output_weight_array[2111:0];
-	wire	[(2112*float)-1 : 0]	denoise_output_weight;
+	reg 	[        float-1 : 0] 	denoise_output_weight_array[2111:0];
+	wire	[ (2112*float)-1 : 0]	denoise_output_weight;
 
-	output	[(22*float)-1 : 0]	gains;
-	input	[(96*float)-1 : 0]	denoise_gru_state;
+	output	[   (22*float)-1 : 0]	gains;
+	input	[   (96*float)-1 : 0]	denoise_gru_state;
+	input 							clk;
 
-	integer 			nb_input, nb_neurons, stride;
-	integer 			index1, index2;
+	integer 						nb_input, nb_neurons, stride;
+	integer 						index1, index2;
 
-	reg	[     float-1 : 0]	sum;
-	reg	[     float-1 : 0]	tmpsum;
-	reg	[     float-1 : 0]	tmpout;
-	reg	[     float-1 : 0]	weight_scale; // 1.f/256
+	reg		[       float-1 : 0]	sum;
+	reg		[       float-1 : 0]	tmpsum;
+	reg		[       float-1 : 0]	tmpout;
+	reg		[       float-1 : 0]	weight_scale; // 1.f/256
 
 
 	assign	denoise_output_bias_array[    0] = 32'b11000010101001000000000000000000;
