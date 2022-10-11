@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
 	f_in	= fopen(argv[1], "rb");
 	f_out	= fopen(argv[2], "wb");
-	f_txt	= fopen("feat_gain.txt", "w");
+	f_txt	= fopen("feat_gain_int.txt", "w");
 	fclose(f_txt);
 
 	while (1) {
