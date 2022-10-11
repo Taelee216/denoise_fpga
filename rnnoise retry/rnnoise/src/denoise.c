@@ -453,51 +453,56 @@ void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const
 
 float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 	int i;
-	kiss_fft_cpx X[FREQ_SIZE];
-	kiss_fft_cpx P[WINDOW_SIZE];
-	float x[FRAME_SIZE];
-	float Ex[NB_BANDS], Ep[NB_BANDS];
-	float Exp[NB_BANDS];
-	float features[NB_FEATURES];
-	float g[NB_BANDS];
-	float gf[FREQ_SIZE]={1};
-	float vad_prob = 0;
+	kiss_fft_cpx	X[FREQ_SIZE];
+	kiss_fft_cpx	P[WINDOW_SIZE];
+	float	x[FRAME_SIZE];
+	float	Ex[NB_BANDS];
+	float	Ep[NB_BANDS];
+	float	Exp[NB_BANDS];
+	float	features[NB_FEATURES];
+	float	gain[NB_BANDS];
+	float	gf[FREQ_SIZE] = {1};
+	float	vad_prob = 0;
 	int silence;
 	static const float a_hp[2] = {-1.99599, 0.99600};
 	static const float b_hp[2] = {-2, 1};
+
 	biquad(x, st->mem_hp_x, in, b_hp, a_hp, FRAME_SIZE);
+
 	silence = compute_frame_features(st, X, P, Ex, Ep, Exp, features, x);
 
 	if (!silence) {
-		compute_rnn(&st->rnn, g, &vad_prob, features);
+
+		compute_rnn(&st->rnn, gain, &vad_prob, features);
+
+		// 완성된다면, compute_rnn 대신 바이너리 파일을 읽어서 처리하자.
 
 		FILE *fp;
-		fp = fopen("feat_gain_int.txt", "ab");
-		// fprintf(fp, "%d: input features\n", cnt);
-		for (int j = 0; j < NB_FEATURES; j++) fprintf(fp, "%lf ", features[j]);
-		// for (int j = 0; j < NB_FEATURES; j++) fwrite(&features[j], sizeof(float), 1, fp);
-		fprintf(fp, "\n");
-		// fprintf( fp, "\noutput gain: \n");
-		for (int j = 0; j < NB_BANDS; j++) fprintf(fp, "%lf  ", g[j]);
-		// for (int j = 0; j < NB_BANDS; j++) fwrite(&g[j], sizeof(float), 1, fp);
-		fprintf(fp, "\n\n");
-		fclose(fp);
-		/*
-		- 바이너리 파일을 쓸 때는 fopen을 바이너리 파일 쓰기 모드 "wb" 로 설정한다
-		- fwrite는 바이너리 파일을 쓰는 함수
-		- fwrite(값이 담겨 있는 변수의 주소, 저장할 변수의 크기, 저장할 변수의 개수, 저장할 파일)
-		- 첫줄에서 num1을 저장하고 나면 자동으로 포인터가 그 다음으로 이동하기 때문에 파일에 num1, num2, num3이 차례차례 저장된다
-		*/
+		if(1) {
+			fp = fopen("feat_gain_int.txt", "a");
+			for (int j = 0; j < NB_FEATURES; j++) fprintf(fp, "%lf ", features[j]);
+			fprintf(fp, "\n");
+			for (int j = 0; j < NB_BANDS; j++) fprintf(fp, "%lf  ", gain[j]);
+			fprintf(fp, "\n\n");
+			fclose(fp);
 
-		pitch_filter(X, P, Ex, Ep, Exp, g);
-		for (i=0;i<NB_BANDS;i++) {
-			float alpha = .6f;
-			g[i] = MAX16(g[i], alpha*st->lastg[i]);
-			st->lastg[i] = g[i];
 		}
-		interp_band_gain(gf, g);
+		else {
+			fp = fopen("feat_gain_int.txt", "ab");
+			fwrite(features, NB_FEATURES * sizeof(float), 1, fp);
+			fwrite(gain, NB_BANDS * sizeof(float), 1, fp);
+			fclose(fp);
+		}
+		
+		pitch_filter(X, P, Ex, Ep, Exp, gain);
+		for ( i = 0; i < NB_BANDS; i++ ) {
+			float alpha = .6f;
+			gain[i] = MAX16(gain[i], alpha*st->lastg[i]);
+			st->lastg[i] = gain[i];
+		}
+		interp_band_gain(gf, gain);
 #if 1
-		for (i=0;i<FREQ_SIZE;i++) {
+		for ( i = 0; i < FREQ_SIZE; i++ ) {
 			X[i].r *= gf[i];
 			X[i].i *= gf[i];
 		}
