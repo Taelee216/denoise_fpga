@@ -1,4 +1,3 @@
-
 module dense1 ( input_dense_bias, input_dense_weight, denseout, in, clk); //42 -> 24
 
 	parameter 			float = 32;
@@ -18,8 +17,8 @@ module dense1 ( input_dense_bias, input_dense_weight, denseout, in, clk); //42 -
 	reg	[     float-1 : 0]	weight_scale; // 1.f/256
 
 	initial begin
-		weight_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
-		sum		= 32'b0;
+		weight_scale= 32'b0_01110111_00000000000000000000000;  // 1.f/256
+		sum			= 32'b0;
 		nb_input	= 42;
 		nb_neurons	= 24;
 		stride		= 24;
