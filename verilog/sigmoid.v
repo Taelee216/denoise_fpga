@@ -1,4 +1,3 @@
-/*
 module sigmoid(X,Y);
 	parameter DATA_WIDTH = 16;
 	parameter FRACT_WIDTH = 8;
@@ -17,7 +16,37 @@ module sigmoid(X,Y);
 
 
 endmodule
-*/
+
+module sigmoid(x,out);
+
+    input signed [15:0] x;
+    output reg signed [15:0] out;
+      
+    
+   reg signed [7:0] y,z,sum;
+   reg signed [15:0] sq,sh;
+    
+   always@(*)
+   begin
+   if(x[7]==1'b1)
+       y=-x;
+   else
+       y=x;
+   z=y>>>2 ;
+      
+   sum= z+8'b1111_0000;
+      
+   sq=sum*sum;
+
+   sh=sq>>>1;
+
+   if(x[7]==1'b1)
+       out=sh;
+   else
+       out=16'b00000001_00000000-sh;
+   end
+   
+endmodule
 `timescale 1ns / 1ps
 //note that the data in must be 5 bit number 1's compliment number i.e, +14.00 to -14.00
 
