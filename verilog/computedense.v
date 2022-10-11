@@ -46,14 +46,6 @@ module dense1 ( denseout, in, clk ); //42 -> 24
 	assign	input_dense_bias_array[   22] = 32'b11000010101100100000000000000000;
 	assign	input_dense_bias_array[   23] = 32'b11000001101000000000000000000000;
 
-	generate 				// using generate-for to pack bus into array
-		genvar i, bit;
-		for ( i = 0 ; i < 24 ; i = i + 1 ) 
-			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
-				assign input_dense_bias[i*bit] = input_dense_bias_array[i][bit];	// 3 for width of input, 32 from size of each pixel
-			end
-	endgenerate	
-
 	assign	input_dense_weights_array[    0] = 32'b11000001001000000000000000000000;
 	assign	input_dense_weights_array[    1] = 32'b00000000000000000000000000000000;
 	assign	input_dense_weights_array[    2] = 32'b11000000010000000000000000000000;
@@ -1065,6 +1057,11 @@ module dense1 ( denseout, in, clk ); //42 -> 24
 
 	generate 				// using generate-for to pack bus into array
 		genvar i, bit;
+		for ( i = 0 ; i < 24 ; i = i + 1 ) 
+			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
+				assign input_dense_bias[i*bit] = input_dense_bias_array[i][bit];	// 3 for width of input, 32 from size of each pixel
+			end
+			
 		for ( i = 0 ; i < 1008 ; i = i + 1 ) 
 			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
 				assign input_dense_weights[i*bit] = input_dense_weights_array[i][bit];	// 3 for width of input, 32 from size of each pixel
@@ -1135,14 +1132,6 @@ module dense2 ( vad, vad_gru_state, clk ); //24 -> 1
 
 	assign	vad_output_bias_array[    0] = 32'b11000010010010000000000000000000;
 
-	generate 				// using generate-for to pack bus into array
-		genvar bit;
-			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
-				assign vad_output_bias[bit] = vad_output_bias_array[bit];	// 3 for width of input, 32 from size of each pixel
-			end
-	endgenerate	
-
-
 	assign	vad_output_weights_array[    0] = 32'b01000010111111100000000000000000;
 	assign	vad_output_weights_array[    1] = 32'b01000010111111100000000000000000;
 	assign	vad_output_weights_array[    2] = 32'b01000010111111100000000000000000;
@@ -1169,11 +1158,16 @@ module dense2 ( vad, vad_gru_state, clk ); //24 -> 1
 	assign	vad_output_weights_array[   23] = 32'b01000010101000000000000000000000;
 
 
-	generate 				// using generate-for to pack bus into array
+
+	generate 	
 		genvar i, bit;
+			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
+				assign vad_output_bias[bit] = vad_output_bias_array[bit];
+			end
+
 		for ( i = 0 ; i < 24 ; i = i + 1 ) 
 			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
-				assign vad_output_weights[i*bit] = vad_output_weights_array[i][bit];	// 3 for width of input, 32 from size of each pixel
+				assign vad_output_weights[i*bit] = vad_output_weights_array[i][bit];
 			end
 	endgenerate	
 
@@ -1212,11 +1206,9 @@ module dense2 ( vad, vad_gru_state, clk ); //24 -> 1
 
 endmodule
 
-module dense3 ( gains, denoise_gru_state, clk ); // 96 -> 22
+module dense3 ( gains, denoise_output_state, clk ); // 96 -> 22
 
 	parameter 		float = 32;
-
-	input 			clk;
 
 	reg 	        [float-1 : 0] 	denoise_output_bias_array[21:0];
 	wire	[   (22*float)-1 : 0]	denoise_output_bias;
@@ -1259,15 +1251,6 @@ module dense3 ( gains, denoise_gru_state, clk ); // 96 -> 22
 	assign	denoise_output_bias_array[   19] = 32'b11000010010001000000000000000000;
 	assign	denoise_output_bias_array[   20] = 32'b11000001100100000000000000000000;
 	assign	denoise_output_bias_array[   21] = 32'b11000001000100000000000000000000;
-
-	generate 				// using generate-for to pack bus into array
-		genvar i, bit;
-		for ( i = 0 ; i < 22 ; i = i + 1 ) 
-			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
-				assign denoise_output_bias[i*bit] = denoise_output_bias_array[i][bit];	// 3 for width of input, 32 from size of each pixel
-			end
-	endgenerate	
-
 
 	assign	denoise_output_weights_array[    0] = 32'b01000001110000000000000000000000;
 	assign	denoise_output_weights_array[    1] = 32'b01000010101101000000000000000000;
@@ -3382,9 +3365,13 @@ module dense3 ( gains, denoise_gru_state, clk ); // 96 -> 22
 	assign	denoise_output_weights_array[ 2110] = 32'b01000001110110000000000000000000;
 	assign	denoise_output_weights_array[ 2111] = 32'b01000001111100000000000000000000;
 
-
 	generate 				// using generate-for to pack bus into array
 		genvar i, bit;
+		for ( i = 0 ; i < 22 ; i = i + 1 ) 
+			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
+				assign denoise_output_bias[i*bit] = denoise_output_bias_array[i][bit];	// 3 for width of input, 32 from size of each pixel
+			end
+
 		for ( i = 0 ; i < 2112 ; i = i + 1 ) 
 			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
 				assign denoise_output_weights[i*bit] = denoise_output_weights_array[i][bit];	// 3 for width of input, 32 from size of each pixel

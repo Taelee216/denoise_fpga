@@ -1221,11 +1221,11 @@ module dense3 ( gains, denoise_gru_state, clk ); // 96 -> 22
 	reg 	        [float-1 : 0] 	denoise_output_bias_array[21:0];
 	wire	[   (22*float)-1 : 0]	denoise_output_bias;
 
-	reg 	[        float-1 : 0] 	denoise_output_weight_array[2111:0];
-	wire	[ (2112*float)-1 : 0]	denoise_output_weight;
+	reg 	[        float-1 : 0] 	denoise_output_weights_array[2111:0];
+	wire	[ (2112*float)-1 : 0]	denoise_output_weights;
 
 	output	[   (22*float)-1 : 0]	gains;
-	input	[   (96*float)-1 : 0]	denoise_gru_state;
+	input	[   (96*float)-1 : 0]	denoise_output_state;
 	input 							clk;
 
 	integer 						nb_input, nb_neurons, stride;
