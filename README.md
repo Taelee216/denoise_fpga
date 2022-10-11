@@ -43,3 +43,4 @@
 2. FPGA 보드의 입출력을 확인하여 노이즈가 제거됨을 확인  
 3. feature와 gain은 지금 float이다. 이거를 fpga에서 fixed로 할 지 float으로 할 지.
 4. feature와 gain은 지금 int로 저장되어 있다. 이거를 바이너리로 저장하고 읽고 써야 한다.  
+  - 성공
