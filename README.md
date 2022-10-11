@@ -17,7 +17,13 @@
 
 + gain이란
 프레임 당 적용되는 음역대 별 조절 값이다.  
-이는 "#define NB_BANDS 22"에 의해 22개의 음역대로 쪼개진다.  
+이는 "#define NB_BANDS 22"에 의해 22개의 음역대로 쪼개진다.(OPUS)  
+![bands](./img/bands.png)  
+
+## 즉  
+
+FPGA 보드는 0.01초마다 42개의 데이터를 입력받고, 22개의 출력을 해야 한다.  
+![topology](./img/topology.png)  
 
 + 첫 실행시 autoconf, libtool 설치 필요  
   + sudo apt-get install autoconf libtool  
