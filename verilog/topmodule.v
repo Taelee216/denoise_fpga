@@ -26,7 +26,9 @@ module RNN(rnn, gains, vad, inp, clk);
 // Code
 //***************************************************************************
 
-	dense1 compute_dense1 ( input_dense_bias, input_dense_weight, denseout, in, clk);
+
+
+	dense1 compute_dense1 ( input_dense_weight, denseout, in, clk);
 	gru1 compute_gru1 ( vad_gru_bias, vad_gru_input_weights, vad_gru_recurrent_weights, vad_gru_state, dense_out, clk );
 	dense2 compute_dense2 ( vad_output_bias, vad_output_weights, vad, vad_gru_state, clk);
 
