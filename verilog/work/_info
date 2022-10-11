@@ -10,7 +10,7 @@ z2
 cModel Technology
 d/home/yoon/intelFPGA/20.1/modelsim_ase/bin
 vdense1
-Z0 !s110 1665525869
+Z0 !s110 1665529760
 !i10b 1
 !s100 5nBGNJI512kSJ1:U]5]c^1
 Z1 !s11b Dg1SIo80bB@j0V0VzS_@n1
@@ -20,18 +20,18 @@ Z3 d/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog
 Z4 w1665525860
 Z5 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v
 Z6 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v
-!i122 35
+!i122 40
 L0 1 1103
 Z7 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z8 !s108 1665525869.000000
-!s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v|
-Z9 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v|
+Z8 !s108 1665529760.000000
+Z9 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v|
+Z10 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v|
 !i113 1
-Z10 o-work work
-Z11 tCvgOpt 0
+Z11 o-work work
+Z12 tCvgOpt 0
 vdense2
 R0
 !i10b 1
@@ -43,18 +43,18 @@ R3
 R4
 R5
 R6
-!i122 35
+!i122 40
 L0 1108 100
 R7
 r1
 !s85 0
 31
 R8
-Z12 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computedense.v|
 R9
-!i113 1
 R10
+!i113 1
 R11
+R12
 vdense3
 R0
 !i10b 1
@@ -66,135 +66,204 @@ R3
 R4
 R5
 R6
-!i122 35
+!i122 40
 L0 1209 2205
 R7
 r1
 !s85 0
 31
 R8
-R12
 R9
-!i113 1
 R10
+!i113 1
 R11
+R12
+vgru1
+Z13 !s110 1665530065
+!i10b 1
+!s100 i3LekQLYFgC?mmFQnhB5^1
+R1
+IcIAMfk0`FG`Y<F88>Mo4J3
+R2
+R3
+Z14 w1665530061
+Z15 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v
+Z16 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v
+!i122 45
+L0 1 3682
+R7
+r1
+!s85 0
+31
+Z17 !s108 1665530065.000000
+!s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v|
+Z18 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v|
+!i113 1
+R11
+R12
+vgru2
+R13
+!i10b 1
+!s100 IKiRJ?43P?8M]RaFnz1eb0
+R1
+I=NBdoW4OIMJ784knL^n=C2
+R2
+R3
+R14
+R15
+R16
+!i122 45
+L0 3689 20169
+R7
+r1
+!s85 0
+31
+R17
+Z19 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v|
+R18
+!i113 1
+R11
+R12
+vgru3
+!s110 1665530066
+!i10b 1
+!s100 FT[iR^Vh3P>XZX54_fV>[2
+R1
+IXFb?_:>fgLg^G_Vcc7@ZM3
+R2
+R3
+R14
+R15
+R16
+!i122 45
+L0 23862 60921
+R7
+r1
+!s85 0
+31
+R17
+R19
+R18
+!i113 1
+R11
+R12
 vrelu
-Z13 !s110 1665525693
+R0
 !i10b 1
 !s100 NLD7oi=?J;aB97BIRldMM3
 R1
 IM6>B66Pj7`ojZH@7SbnFO0
 R2
 R3
-Z14 w1665506863
+Z20 w1665506863
 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v
 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v
-!i122 30
+!i122 36
 L0 12 6
 R7
 r1
 !s85 0
 31
-Z15 !s108 1665525693.000000
+R8
 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v|
 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/relu.v|
 !i113 1
-R10
 R11
+R12
 vsigmoid
-R13
+R0
 !i10b 1
 !s100 GI[O_KgM:CTZVC@oJG3G=1
 R1
 IXo4H0DzDC9eP@o@5z^42?2
 R2
 R3
-R14
-Z16 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v
-Z17 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v
-!i122 31
+R20
+Z21 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v
+Z22 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v
+!i122 37
 L0 20 30
 R7
 r1
 !s85 0
 31
-R15
-Z18 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v|
-Z19 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v|
+R8
+Z23 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v|
+Z24 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/sigmoid.v|
 !i113 1
-R10
 R11
+R12
 vsigmoid_function
-R13
+R0
 !i10b 1
 !s100 9`;a[<UlcomE59=ZQkH9?0
 R1
 I@m>o<>k]f?NCW]2B?HH?43
 R2
 R3
-R14
-R16
-R17
-!i122 31
+R20
+R21
+R22
+!i122 37
 L0 53 86
 R7
 r1
 !s85 0
 31
-R15
-R18
-R19
+R8
+R23
+R24
 !i113 1
-R10
 R11
+R12
 vtanh
-R13
+R0
 !i10b 1
 !s100 oLeoEg4ACb:eb0f@]UfNM1
 R1
 I@fEBY]6odOX=G33GjI^La0
 R2
 R3
-Z20 w1665494233
-Z21 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v
-Z22 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v
-!i122 32
+Z25 w1665494233
+Z26 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v
+Z27 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v
+!i122 38
 L0 1 61
 R7
 r1
 !s85 0
 31
-R15
-Z23 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v|
-Z24 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v|
+R8
+Z28 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v|
+Z29 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tanh.v|
 !i113 1
-R10
 R11
+R12
 vtanh_function_1
-R13
+R0
 !i10b 1
 !s100 ^?1`ThnXk_MZeKz_KQ<Wb3
 R1
 I7@TodLb^>a>LRAmZI>YOD1
 R2
 R3
-R20
-R21
-R22
-!i122 32
+R25
+R26
+R27
+!i122 38
 L0 66 81
 R7
 r1
 !s85 0
 31
-R15
-R23
-R24
+R8
+R28
+R29
 !i113 1
-R10
 R11
+R12
 vtansig
-R13
+R0
 !i10b 1
 !s100 3]N8^AT>N9f^Q?m?9NCdF0
 R1
@@ -204,15 +273,15 @@ R3
 w1665452420
 8/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tansig.v
 F/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tansig.v
-!i122 33
+!i122 39
 L0 1 9
 R7
 r1
 !s85 0
 31
-R15
+R8
 !s107 /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tansig.v|
 !s90 -reportprogress|300|-work|work|-stats=none|/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/tansig.v|
 !i113 1
-R10
 R11
+R12

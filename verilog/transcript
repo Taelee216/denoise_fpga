@@ -112,3 +112,26 @@
 # Compile of computegru.v failed with 2 errors.
 # Compile of computegru.v failed with 12 errors.
 # Compile of computegru.v failed with 32 errors.
+# Compile of computegru.v failed with 20091 errors.
+# Error opening /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/(vlog-13069) /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v
+# Path name '/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/(vlog-13069) /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v' doesn't exist.
+# Error opening /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/(vlog-13069) /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v
+# Path name '/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/(vlog-13069) /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v' doesn't exist.
+# Error opening /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/(vlog-13069) /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v
+# Path name '/home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/(vlog-13069) /home/yoon/Documents/Denoise FPGA/denoise_fpga/verilog/computegru.v' doesn't exist.
+# Compile of computegru.v failed with 20091 errors.
+# Compile of computegru.v failed with 14 errors.
+# Compile of computegru.v failed with 13 errors.
+# Compile of relu.v failed with 2 errors.
+# Compile of sigmoid.v was successful with warnings.
+# Compile of tanh.v was successful.
+# Compile of tansig.v was successful.
+# Compile of computedense.v was successful.
+# Compile of computegru.v failed with 13 errors.
+# Compile of topmodule.v failed with 6 errors.
+# 7 compiles, 3 failed with 21 errors.
+# Compile of computegru.v failed with 11 errors.
+# Compile of computegru.v failed with 9 errors.
+# Compile of computegru.v failed with 7 errors.
+# Compile of computegru.v failed with 3 errors.
+# Compile of computegru.v was successful.
