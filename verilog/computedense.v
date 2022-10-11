@@ -42,13 +42,6 @@ module dense1 ( input_dense_weight, denseout, in, clk); //42 -> 24
 			end
 	endgenerate
 
-
-	input_dense_bias[index1*float +: 32];
-
-
-
-
-
 	input	[(42*float)-1 : 0]	input_dense_weight;
 	output	[(24*float)-1 : 0]	denseout;
 	input	[(42*float)-1 : 0]	in;

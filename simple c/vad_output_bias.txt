@@ -1,0 +1,1 @@
+assign vad_output_bias_array[    0] = 32'b11000010010010000000000000000000;

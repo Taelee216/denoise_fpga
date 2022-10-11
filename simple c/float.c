@@ -11131,5 +11131,51 @@ int main() {
 
 
 
+/////////////////////////////////////////////////////////////////////////// denoise_output_bias
+    f_out = fopen("denoise_output_bias.txt", "w");
+    size = sizeof(denoise_output_bias) / sizeof(denoise_output_bias[0]);
+    for (int i = 0; i < size; i++) {
+        fprintf(f_out, "assign denoise_output_bias_array[%5d] = 32'b", i);
+        out_float(denoise_output_bias[i]);
+        fprintf(f_out, ";\n");
+    }
+    fclose(f_out);
+
+/////////////////////////////////////////////////////////////////////////// denoise_output_weights
+    f_out = fopen("denoise_output_weights.txt", "w");
+    size = sizeof(denoise_output_weights) / sizeof(denoise_output_weights[0]);
+    for (int i = 0; i < size; i++) {
+        fprintf(f_out, "assign denoise_output_weights_array[%5d] = 32'b", i);
+        out_float(denoise_output_weights[i]);
+        fprintf(f_out, ";\n");
+    }
+    fclose(f_out);
+
+
+
+/////////////////////////////////////////////////////////////////////////// vad_output_bias
+    f_out = fopen("vad_output_bias.txt", "w");
+    size = sizeof(vad_output_bias) / sizeof(vad_output_bias[0]);
+    for (int i = 0; i < size; i++) {
+        fprintf(f_out, "assign vad_output_bias_array[%5d] = 32'b", i);
+        out_float(vad_output_bias[i]);
+        fprintf(f_out, ";\n");
+    }
+    fclose(f_out);
+
+/////////////////////////////////////////////////////////////////////////// vad_output_weights
+    f_out = fopen("vad_output_weights.txt", "w");
+    size = sizeof(vad_output_weights) / sizeof(vad_output_weights[0]);
+    for (int i = 0; i < size; i++) {
+        fprintf(f_out, "assign vad_output_weights_array[%5d] = 32'b", i);
+        out_float(vad_output_weights[i]);
+        fprintf(f_out, ";\n");
+    }
+    fclose(f_out);
+
+
+
+
+
     return 0;
 }
