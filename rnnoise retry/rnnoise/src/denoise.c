@@ -477,21 +477,29 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 
 		// 완성된다면, compute_rnn 대신 바이너리 파일을 읽어서 처리하자.
 
-		FILE *fp;
+		FILE *f_feat,	*f_gain;
 		if(1) {
-			fp = fopen("feat_gain_int.txt", "a");
-			for (int j = 0; j < NB_FEATURES; j++) fprintf(fp, "%lf ", features[j]);
-			fprintf(fp, "\n");
-			for (int j = 0; j < NB_BANDS; j++) fprintf(fp, "%lf  ", gain[j]);
-			fprintf(fp, "\n\n");
-			fclose(fp);
+			f_feat = fopen("input_feature_float.txt", "a");
+			f_gain = fopen("output_gain_float.txt", "a");
 
+			for (int j = 0; j < NB_FEATURES; j++) fprintf(f_feat, "%lf, ", features[j]);
+			fprintf(f_feat, "\n");
+
+			for (int j = 0; j < NB_BANDS; j++) fprintf(f_gain, "%lf  ", gain[j]);
+			fprintf(f_gain, "\n");
+
+			fclose(f_feat);
+			fclose(f_gain);
 		}
 		else {
-			fp = fopen("feat_gain_int.txt", "ab");
-			fwrite(features, NB_FEATURES * sizeof(float), 1, fp);
-			fwrite(gain, NB_BANDS * sizeof(float), 1, fp);
-			fclose(fp);
+			f_feat = fopen("input_feature_bin.txt", "ab");
+			f_gain = fopen("output_gain_bin.txt", "ab");
+
+			fwrite(features,	sizeof(float), NB_FEATURES,	f_feat);
+			fwrite(gain,		sizeof(float), NB_BANDS,	f_gain);
+
+			fclose(f_feat);
+			fclose(f_gain);
 		}
 		
 		pitch_filter(X, P, Ex, Ep, Exp, gain);
