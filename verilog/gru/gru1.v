@@ -3679,6 +3679,43 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			gi <= gi + 1;
 		end
 	end
+/*
+		//always @(posedge clk) begin
+	genvar gi;
+	generate 
+		//gi =0; index2 =0; index3 = 0;
+		
+		//tmpsum1 = 0; tmpsum2 = 0;
+		
+		if(gi < N) begin
+
+			sum <= vad_gru_bias[2*N+gi*float+N +: float];
+
+			if(index2 < M) begin
+				tmpsum1	<= vad_gru_input_weights[(2*N+index2*stride+gi)*float +: float] * dense_out[index2*float +: float];
+				sum	<= tmpsum1 + sum;
+				index2	<= index2 + 1;
+			end
+
+			if(index3 < M) begin
+				tmpsum2	<= vad_gru_recurrent_weights[(2*N+index3*stride+gi)*float +:32] * vad_gru_state[index3*float +: float]*r[index3*float +: float];
+				sum	<= tmpsum2 + sum;
+				index3	<= index3 + 1;
+			end
+
+			tanh tanhforg1(sum, tmptmp);
+
+			h[gi*float +: float] = z[gi*float +: float]*state[gi*float +: float] + (one -z[gi*float +: float]) * tmptmp;
+
+			gi <= gi + 1;
+		end
+	//end
+	endgenerate
+	
+	assign vad_gru_state = h;
+
+endmodule
+*/
 	
 	assign vad_gru_state = h;
 
