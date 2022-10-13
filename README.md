@@ -12,12 +12,22 @@
 즉 1초에 100개의 프레임을 처리해야 한다.  
 
 + feature란  
-프레임 당 추출된 특성이다.  
-이는 "#define NB_FEATURES (NB_BANDS+3*NB_DELTA_CEPS+2)"에 의해 한 프레임당 42개 이다.  
+프레임 당 추출된 특성이다. 이는  
+
+``` C
+#define NB_FEATURES (NB_BANDS+3*NB_DELTA_CEPS+2)
+```
+
+에 의해 한 프레임당 42개 이다.  
 
 + gain이란
-프레임 당 적용되는 음역대 별 조절 값이다.  
-이는 "#define NB_BANDS 22"에 의해 22개의 음역대로 쪼개진다.(OPUS)  
+프레임 당 적용되는 음역대 별 조절 값이다. 이는  
+
+``` C
+#define NB_BANDS 22
+```
+
+에 의해 22개의 음역대로 쪼개진다. (OPUS)  
 ![bands](./img/bands.png)  
 
 ## 즉  
@@ -26,21 +36,33 @@ FPGA 보드는 0.01초마다 42개의 데이터를 입력받고, 22개의 출력
 ![topology](./img/topology.png)  
 
 + 첫 실행시 autoconf, libtool 설치 필요  
-  + sudo apt-get install autoconf libtool  
+
+``` bash
+sudo apt-get install autoconf libtool  
+```
 
 + ffmpeg - 음성 데이터의 변환  
-  + ffmpeg -i input_wav.wav -f s16le -acodec pcm_s16le -ar 48k input_pcm.pcm  
-  + ffmpeg -f s16le -acodec pcm_s16le -ar 48k -i output_pcm.pcm output_wav.wav  
+
+``` bat
+ffmpeg -i input_wav.wav -f s16le -acodec pcm_s16le -ar 48k input_pcm.pcm  
+ffmpeg -f s16le -acodec pcm_s16le -ar 48k -i output_pcm.pcm output_wav.wav  
+```
 
 + Compile  
-  + ./autogen.sh  
-  + ./configure  
-  + make  
 
-  + ./autogen.sh && ./configure && make  
+``` bash
+./autogen.sh  
+./configure  
+make  
+
+./autogen.sh && ./configure && make  
+```
 
 + usage  
-  + ./examples/rnnoise_demo ./examples/input_pcm.pcm ./examples/output_pcm.pcm  
+
+``` bash
+./examples/rnnoise_demo ./examples/input_pcm.pcm ./examples/output_pcm.pcm  
+```
 
 ## 한 것  
 
