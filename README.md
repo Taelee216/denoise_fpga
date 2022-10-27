@@ -71,7 +71,7 @@ make
 
 ## 할것  
 
-1. src/rnn.c 모듈을 verilog로 변환 <- 어느정도 됨.  
+1. src/rnn.c 모듈을 verilog로 변환.  
 2. feature -> FPGA -> gain 통해 노이즈가 제거됨을 확인  
-3. feature와 gain은 지금 float이다. 이거를 fpga에서 fixed로 할 지 float으로 할 지.
+3. 각 연산의 fixed point 구현  
 4. Xilinx에서 이 이진 파일을 읽을 수 있을지... 그리고 다시 이진 파일로 저장할 수 있을지.  
