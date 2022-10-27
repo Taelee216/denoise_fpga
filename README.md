@@ -75,3 +75,4 @@ make
 2. 각 연산의 fixed point 구현  
 3. Xilinx에서 이진 파일로 프레임 입력 -> 게인 출력  
 4. feature -> FPGA -> gain 통해 노이즈가 제거됨을 확인  
+5. 되면 - 비트 수 16bit  
