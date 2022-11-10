@@ -38,6 +38,27 @@ module RNN( gains, vad, feature, clk );
 		for ( i = 0;	i < INPUT_SIZE;						i++ )	noise_input[i+rnn->model->input_dense_size+rnn->model->vad_gru_size]	= feature[i];
 	endgenerate
 
+	always @(posedge i_Clock) 
+		begin
+		for(ii=0; ii<input_dense_size; ii=ii+1)
+			noise_input[ii] <= dense_out[ii]
+		end
+
+	always @(posedge i_Clock) 
+		begin
+		for(ii=0; ii<vad_gru_size; ii=ii+1)
+			noise_input[ii+input_dense_size] <= vad_gru_state[ii]
+    	end  
+	always @(posedge i_Clock) 
+		begin
+		for(ii=0; ii<INPUT_SIZE; ii=ii+1)
+			noise_input[ii+input_dense_size+vad_gru_size] <= feature[ii]
+    	end      
+endmodule   
+
+
+
+
 	gru2	compute_gru2	( noise_gru_state,		noise_input,		clk);
 
 	generate
