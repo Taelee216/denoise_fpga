@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/s/project_1/project_1.gen/sources_1/ip/floating_point_0/sim/floating_point_0.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module floating_point_0
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/s/project_1/project_1.srcs/sim_1/new/multi_sim.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module multi_sim
