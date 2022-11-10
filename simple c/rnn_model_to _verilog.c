@@ -11014,22 +11014,24 @@ int main() {
 
 
 ///////////////////////////////////////////////////////////////////////////     input_dense_bias
-	f_out	= fopen("input_dense_bias.txt", "w");
+	f_out	= fopen("input_dense_bias.mem", "w");
 	size    = sizeof(input_dense_bias) / sizeof(input_dense_bias[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tinput_dense_bias_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tinput_dense_bias_array[%5d] = 32'b", i);
 		out_float(input_dense_bias[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 ///////////////////////////////////////////////////////////////////////////     input_dense_weights
-	f_out	= fopen("input_dense_weights.txt", "w");
+	f_out	= fopen("input_dense_weights.mem", "w");
 	size    = sizeof(input_dense_weights) / sizeof(input_dense_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tinput_dense_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tinput_dense_weights_array[%5d] = 32'b", i);
 		out_float(input_dense_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
@@ -11037,139 +11039,152 @@ int main() {
 
 
 ///////////////////////////////////////////////////////////////////////////     vad_gru_weights
-	f_out	= fopen("vad_gru_input_weights.txt", "w");
+	f_out	= fopen("vad_gru_input_weights.mem", "w");
 	size    = sizeof(vad_gru_weights) / sizeof(vad_gru_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tvad_gru_input_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tvad_gru_input_weights_array[%5d] = 32'b", i);
 		out_float(vad_gru_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 ///////////////////////////////////////////////////////////////////////////     vad_gru_recurrent_weights
-	f_out	= fopen("vad_gru_recurrent_weights.txt", "w");
+	f_out	= fopen("vad_gru_recurrent_weights.mem", "w");
 	size    = sizeof(vad_gru_recurrent_weights) / sizeof(vad_gru_recurrent_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tvad_gru_recurrent_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tvad_gru_recurrent_weights_array[%5d] = 32'b", i);
 		out_float(vad_gru_recurrent_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 ///////////////////////////////////////////////////////////////////////////     vad_gru_bias
-	f_out	= fopen("vad_gru_bias.txt", "w");
+	f_out	= fopen("vad_gru_bias.mem", "w");
 	size    = sizeof(vad_gru_bias) / sizeof(vad_gru_bias[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tvad_gru_bias_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tvad_gru_bias_array[%5d] = 32'b", i);
 		out_float(vad_gru_bias[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 
 /////////////////////////////////////////////////////////////////////////// noise_gru_weights
-	f_out = fopen("noise_gru_input_weights.txt", "w");
+	f_out = fopen("noise_gru_input_weights.mem", "w");
 	size = sizeof(noise_gru_weights) / sizeof(noise_gru_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tnoise_gru_input_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tnoise_gru_input_weights_array[%5d] = 32'b", i);
 		out_float(noise_gru_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// noise_gru_recurrent_weights
-	f_out = fopen("noise_gru_recurrent_weights.txt", "w");
+	f_out = fopen("noise_gru_recurrent_weights.mem", "w");
 	size = sizeof(noise_gru_recurrent_weights) / sizeof(noise_gru_recurrent_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tnoise_gru_recurrent_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tnoise_gru_recurrent_weights_array[%5d] = 32'b", i);
 		out_float(noise_gru_recurrent_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// noise_gru_bias
-	f_out = fopen("noise_gru_bias.txt", "w");
+	f_out = fopen("noise_gru_bias.mem", "w");
 	size = sizeof(noise_gru_bias) / sizeof(noise_gru_bias[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tnoise_gru_bias_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tnoise_gru_bias_array[%5d] = 32'b", i);
 		out_float(noise_gru_bias[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 
 
 /////////////////////////////////////////////////////////////////////////// denoise_gru_weights
-	f_out = fopen("denoise_gru_input_weights.txt", "w");
+	f_out = fopen("denoise_gru_input_weights.mem", "w");
 	size = sizeof(denoise_gru_weights) / sizeof(denoise_gru_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tdenoise_gru_input_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tdenoise_gru_input_weights_array[%5d] = 32'b", i);
 		out_float(denoise_gru_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// denoise_gru_recurrent_weights
-	f_out = fopen("denoise_gru_recurrent_weights.txt", "w");
+	f_out = fopen("denoise_gru_recurrent_weights.mem", "w");
 	size = sizeof(denoise_gru_recurrent_weights) / sizeof(denoise_gru_recurrent_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tdenoise_gru_recurrent_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tdenoise_gru_recurrent_weights_array[%5d] = 32'b", i);
 		out_float(denoise_gru_recurrent_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// denoise_gru_bias
-	f_out = fopen("denoise_gru_bias.txt", "w");
+	f_out = fopen("denoise_gru_bias.mem", "w");
 	size = sizeof(denoise_gru_bias) / sizeof(denoise_gru_bias[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tdenoise_gru_bias_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tdenoise_gru_bias_array[%5d] = 32'b", i);
 		out_float(denoise_gru_bias[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 
 
 /////////////////////////////////////////////////////////////////////////// denoise_output_bias
-	f_out = fopen("denoise_output_bias.txt", "w");
+	f_out = fopen("denoise_output_bias.mem", "w");
 	size = sizeof(denoise_output_bias) / sizeof(denoise_output_bias[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tdenoise_output_bias_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tdenoise_output_bias_array[%5d] = 32'b", i);
 		out_float(denoise_output_bias[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// denoise_output_weights
-	f_out = fopen("denoise_output_weights.txt", "w");
+	f_out = fopen("denoise_output_weights.mem", "w");
 	size = sizeof(denoise_output_weights) / sizeof(denoise_output_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tdenoise_output_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tdenoise_output_weights_array[%5d] = 32'b", i);
 		out_float(denoise_output_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 
 
 /////////////////////////////////////////////////////////////////////////// vad_output_bias
-	f_out = fopen("vad_output_bias.txt", "w");
+	f_out = fopen("vad_output_bias.mem", "w");
 	size = sizeof(vad_output_bias) / sizeof(vad_output_bias[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tvad_output_bias_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tvad_output_bias_array[%5d] = 32'b", i);
 		out_float(vad_output_bias[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// vad_output_weights
-	f_out = fopen("vad_output_weights.txt", "w");
+	f_out = fopen("vad_output_weights.mem", "w");
 	size = sizeof(vad_output_weights) / sizeof(vad_output_weights[0]);
 	for (int i = 0; i < size; i++) {
-		fprintf(f_out, "assign\tvad_output_weights_array[%5d] = 32'b", i);
+		// fprintf(f_out, "assign\tvad_output_weights_array[%5d] = 32'b", i);
 		out_float(vad_output_weights[i]);
-		fprintf(f_out, ";\n");
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
 	}
 	fclose(f_out);
 
