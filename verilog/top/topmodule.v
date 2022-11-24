@@ -1,7 +1,10 @@
 module RNN( gains, vad, feature, clk );
+
+parameter 	float = 32;
+
 // Inputs and Output
 	input 			clk;
-	input [31:0]	feature[41:0];
+	input	[(   42*float)-1 : 0]	feature;
 	output 			gains;
 	output 			vad;
 
