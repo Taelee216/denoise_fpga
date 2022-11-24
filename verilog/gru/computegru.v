@@ -14,9 +14,13 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 	input 	[(   24*float)-1 : 0]	dense_out;
 	input 							clk;
 	
-	reg     [(   24*float)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
+	//reg     [(   24*float)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
+	reg     [(   24*float)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
 	reg     [        float-1 : 0]	weights_scale;
 	reg     [(   24*float)-1 : 0]	sum, tmpsum1, tmpsum2;
+	//to solve register error of z
+	wire [(   90*float)-1 : 0]	z = 0 ;
+	wire [(   90*float)-1 : 0]	r = 0;
 
 	
 	reg     [        float-1 : 0]   vad_gru_bias_array[71:0];
@@ -64,8 +68,8 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		weights_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
 		tmpsum1		= 0;
 		tmpsum2		= 0;
-		z 		= 0;
-		r 		= 0;
+		//z 		= 0;
+		//r 		= 0;
 		h 		= 0;
 	end
 
@@ -184,7 +188,9 @@ module gru2( noise_gru_state, noise_input, clk );
 	reg 	[(   90*float)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
 	reg		[        float-1 : 0]	weights_scale;
 	reg		[(   48*float)-1 : 0]	sum, tmpsum1, tmpsum2;
-
+	//to solve register error of z
+	wire [(   90*float)-1 : 0]	z = 0 ;
+	wire [(   90*float)-1 : 0]	r = 0;
 
 	reg		[        float-1 : 0]	noise_gru_bias_array[143:0];
 	wire	[(  144*float)-1 : 0]	noise_gru_bias;
@@ -194,9 +200,7 @@ module gru2( noise_gru_state, noise_input, clk );
 
 	reg		[        float-1 : 0]	noise_gru_recurrent_weights_array[6911:0];
 	wire	[( 6912*float)-1 : 0]	noise_gru_recurrent_weights;
-	//to solve register error of z
-	wire [(   90*float)-1 : 0]	z = 0;
-	wire [(   90*float)-1 : 0]	r = 0;
+
 
 	initial begin
 		$readmemb("noise_gru_bias.mem",					noise_gru_bias_array,				0, 143);
@@ -230,8 +234,8 @@ module gru2( noise_gru_state, noise_input, clk );
 		weights_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
 		tmpsum1		= 0;
 		tmpsum2		= 0;
-		z 		= 0;
-		r 		= 0;
+		//z 		= 0;
+		//r 		= 0;
 		h 		= 0;
 	end
 
@@ -260,7 +264,9 @@ module gru2( noise_gru_state, noise_input, clk );
 	end
 
 	sigmoid sigforz(tmpz, z);
-
+	//
+	assign z_out = z;
+	
 	always @(posedge clk) begin
 
 		index1 =0; index2 =0; index3 = 0;
@@ -341,9 +347,12 @@ module gru3(denoise_gru_state, denoise_input, clk);
 	input 	[(  114*float)-1 : 0]	denoise_input;
 	input                           clk;
 	
-	reg		[(  114*float)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
+	//reg		[(  114*float)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
+	reg		[(  114*float)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
 	reg		[        float-1 : 0]	weights_scale;
 	reg		[(   96*float)-1 : 0]	sum, tmpsum1, tmpsum2;
+	wire 	[(  114*float)-1 : 0]	z = 0;
+	wire 	[(  114*float)-1 : 0]	z = 0;
 
 	reg		[        float-1 : 0]	denoise_gru_bias_array[287:0];
 	wire	[(  288*float)-1 : 0]	denoise_gru_bias;
@@ -388,8 +397,8 @@ module gru3(denoise_gru_state, denoise_input, clk);
 		weights_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
 		tmpsum1		= 0;
 		tmpsum2		= 0;
-		z 		= 0;
-		r 		= 0;
+		//z 		= 0;
+		//r 		= 0;
 		h 		= 0;
 	end
 
