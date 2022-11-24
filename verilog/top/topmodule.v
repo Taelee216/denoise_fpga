@@ -1,6 +1,6 @@
 module RNN( gains, vad, feature, clk );
 
-parameter 	float = 32;
+	parameter 	float = 32;
 
 // Inputs and Output
 	input 			clk;
@@ -10,7 +10,7 @@ parameter 	float = 32;
 
 	reg  			old_rx_data_rdy;
 	reg  [7:0]      char_data;
-	reg [31:0]		dense_out[23:0];
+	reg		[(   24*float)-1 : 0]	denseout
 	reg [31:0]		noise_input[89:0];
 	reg [31:0]		vad_gru_state[23:0];
 	reg 			denoise_input;
