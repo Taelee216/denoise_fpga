@@ -1,11 +1,11 @@
 module top_test();
 
-	parameter   float   = 32;
+	parameter   fixed   = 32;
 	reg		    clk = 1'b0;
-	reg	    [(      float)-1 : 0]	feature_in[41:0];
-	wire    [(   42*float)-1 : 0]	feature;
-	wire	[        float-1 : 0]	vad;
-	wire	[(   22*float)-1 : 0]	gains;
+	reg	    [(      fixed)-1 : 0]	feature_in[41:0];
+	wire    [(   42*fixed)-1 : 0]	feature;
+	wire	[        fixed-1 : 0]	vad;
+	wire	[(   22*fixed)-1 : 0]	gains;
 
 
 	initial begin 
@@ -15,8 +15,8 @@ module top_test();
 	generate 				// using generate-for to pack bus into array
 		genvar i, bit;
 		for ( i = 0 ; i < 42 ; i = i + 1 ) begin	
-			for ( bit = 0 ; bit < float ; bit = bit + 1 ) begin	
-				assign feature[i*float+bit] = feature_in[i][bit];	
+			for ( bit = 0 ; bit < fixed ; bit = bit + 1 ) begin	
+				assign feature[i*fixed+bit] = feature_in[i][bit];	
 			end
 		end
 	endgenerate
