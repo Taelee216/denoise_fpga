@@ -2,7 +2,7 @@ module tansig( x, y);
     input x;
     output y;
 
-    reg tmpy;
+    wire tmpy;
     tanh th(x,tmpy);
     sigmoid sg(tmpy, y);
 
