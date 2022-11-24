@@ -24,7 +24,7 @@ module dense1 ( denseout, in, clk); //42 -> 24
 	reg     [        float-1 : 0]   input_dense_weights_array[1007:0];
 	wire    [( 1008*float)-1 : 0]   input_dense_weights;
 
-	$readmemb("input_dense_bias.mem",			input_dense_bias_array,			0, 23);
+	$readmemb("input_dense_bias.mem", input_dense_bias_array, 0, 23);
 	$readmemb("input_dense_weights.mem",		input_dense_weights_array,		0, 41);
 	
 	generate 				// using generate-for to pack bus into array
