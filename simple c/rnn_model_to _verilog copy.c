@@ -45,6 +45,7 @@ float feature[42] = {
 	-1.250832
 };
 
+float gain[22] = {0.129255,  0.221202,  0.195956, 0.207909,  0.180190,  0.252392,  0.248490,  0.214852,  0.199886, 0.212310 , 0.195907 , 0.193804,  0.222044,  0.251122,  0.211202 , 0.184392 , 0.160439 , 0.151432 , 0.152264 , 0.183748 , 0.250726 , 0.358647 };
 FILE *f_out;
 
 void out_float(float f) {
@@ -74,6 +75,16 @@ int main() {
 	for (int i = 0; i < size; i++) {
 		// fprintf(f_out, "assign\tinput_dense_bias_array[%5d] = 32'b", i);
 		out_float(feature[i]);
+		fprintf(f_out, "\n");
+		// fprintf(f_out, ";\n");
+	}
+	fclose(f_out);
+
+		f_out	= fopen("gain.mem", "w");
+	size    = sizeof(gain) / sizeof(gain[0]);
+	for (int i = 0; i < size; i++) {
+		// fprintf(f_out, "assign\tinput_dense_bias_array[%5d] = 32'b", i);
+		out_float(gain[i]);
 		fprintf(f_out, "\n");
 		// fprintf(f_out, ";\n");
 	}
