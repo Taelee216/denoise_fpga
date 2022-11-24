@@ -352,7 +352,7 @@ module gru3(denoise_gru_state, denoise_input, clk);
 	reg		[        float-1 : 0]	weights_scale;
 	reg		[(   96*float)-1 : 0]	sum, tmpsum1, tmpsum2;
 	wire 	[(  114*float)-1 : 0]	z = 0;
-	wire 	[(  114*float)-1 : 0]	z = 0;
+	wire 	[(  114*float)-1 : 0]	r = 0;
 
 	reg		[        float-1 : 0]	denoise_gru_bias_array[287:0];
 	wire	[(  288*float)-1 : 0]	denoise_gru_bias;
