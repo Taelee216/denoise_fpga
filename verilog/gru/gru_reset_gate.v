@@ -1,4 +1,4 @@
-module gru_reset_gate():
+module gru_reset_gate();
     
     generate 
 		genvar i, bit;
@@ -16,4 +16,5 @@ module gru_reset_gate():
 			for ( bit = 0 ; bit < 32 ; bit = bit + 1 ) begin	
 				assign vad_gru_recurrent_weights[i*float+bit] = vad_gru_recurrent_weights_array[i][bit];	
 			end
-	endgenerate	
+	endgenerate
+endmodule	

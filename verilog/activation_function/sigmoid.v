@@ -1,4 +1,4 @@
-module sigmoid(X,Y);
+module sigmoid_simple(X,Y);
 	parameter DATA_WIDTH = 16;
 	parameter FRACT_WIDTH = 8;
 	
