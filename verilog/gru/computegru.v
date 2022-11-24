@@ -9,7 +9,7 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 	integer	    N       = 24;
 	integer	    stride  = 72;
 	integer 	one     = 1;
-
+`
 	output 	[(   24*float)-1 : 0]	vad_gru_state;
 	input 	[(   24*float)-1 : 0]	dense_out;
 	input 							clk;
