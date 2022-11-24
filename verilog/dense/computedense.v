@@ -26,10 +26,10 @@ module dense1 ( denseout, in, clk); //42 -> 24
 
 	initial begin 
 		// $readmemb("bin_memory_file.mem", memory_array, [start_address], [end_address]);
-		$readmemb("C:\Users\yoon\Documents\VScode_GIT\denoise_fpga\verilog\mem\input_dense_bias.mem", input_dense_bias_array, 0, 23);
+		$readmemb("input_dense_bias.mem", input_dense_bias_array, 0, 23);
 		$readmemb("input_dense_weights.mem",		input_dense_weights_array,		0, 41);
 	end
-	
+
 	generate 				// using generate-for to pack bus into array
 		genvar i, bit;
 		for ( i = 0 ; i < 24 ; i = i + 1 ) begin	
@@ -103,8 +103,8 @@ module dense2 ( vad, vad_gru_state, clk); //24 -> 1
 	wire	[(   24*float)-1 : 0]	vad_output_weights;
 
 	initial begin
-	$readmemb("vad_output_bias.mem",		vad_output_bias_array,			0, 0);
-	$readmemb("vad_output_weights.mem",		vad_output_weights_array,		0, 23);
+		$readmemb("vad_output_bias.mem",		vad_output_bias_array,			0, 0);
+		$readmemb("vad_output_weights.mem",		vad_output_weights_array,		0, 23);
 	end
 
 	generate 				// using generate-for to pack bus into array
@@ -177,8 +177,8 @@ module dense3 ( gains, denoise_gru_state, clk );
 	wire	[( 2112*float)-1 : 0]	denoise_output_weights;
 
 	initial begin
-	$readmemb("denoise_output_bias.mem",		denoise_output_bias_array,			0, 21);
-	$readmemb("denoise_output_weights.mem",		denoise_output_weights_array,		0, 2111);
+		$readmemb("denoise_output_bias.mem",		denoise_output_bias_array,			0, 21);
+		$readmemb("denoise_output_weights.mem",		denoise_output_weights_array,		0, 2111);
 	end
 	
 	generate 				// using generate-for to pack bus into array

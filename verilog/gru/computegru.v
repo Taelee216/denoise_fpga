@@ -9,7 +9,7 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 	integer	    N       = 24;
 	integer	    stride  = 72;
 	integer 	one     = 1;
-`
+
 	output 	[(   24*float)-1 : 0]	vad_gru_state;
 	input 	[(   24*float)-1 : 0]	dense_out;
 	input 							clk;
@@ -29,9 +29,9 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 	wire	[( 1728*float)-1 : 0]	vad_gru_recurrent_weights;
 
 	initial begin
-	$readmemb("vad_gru_bias.mem",				vad_gru_bias_array,					0, 71);
-	$readmemb("vad_gru_input_weights.mem",		vad_gru_input_weights_array,		0, 1727);
-	$readmemb("vad_gru_recurrent_weights.mem",	vad_gru_recurrent_weights_array,	0, 1727);
+		$readmemb("vad_gru_bias.mem",				vad_gru_bias_array,					0, 71);
+		$readmemb("vad_gru_input_weights.mem",		vad_gru_input_weights_array,		0, 1727);
+		$readmemb("vad_gru_recurrent_weights.mem",	vad_gru_recurrent_weights_array,	0, 1727);
 	end
 
 	generate 
@@ -195,9 +195,9 @@ module gru2( noise_gru_state, noise_input, clk );
 	wire	[( 6912*float)-1 : 0]	noise_gru_recurrent_weights;
 
 	initial begin
-	$readmemb("noise_gru_bias.mem",					noise_gru_bias_array,				0, 143);
-	$readmemb("noise_gru_input_weights.mem",		noise_gru_input_weights_array,		0, 12959);
-	$readmemb("noise_gru_recurrent_weights.mem",	noise_gru_recurrent_weights_array,	0, 6911);
+		$readmemb("noise_gru_bias.mem",					noise_gru_bias_array,				0, 143);
+		$readmemb("noise_gru_input_weights.mem",		noise_gru_input_weights_array,		0, 12959);
+		$readmemb("noise_gru_recurrent_weights.mem",	noise_gru_recurrent_weights_array,	0, 6911);
 	end
 
 	generate 
@@ -351,9 +351,9 @@ module gru3(denoise_gru_state, denoise_input, clk);
 	wire	[(27648*float)-1 : 0]	denoise_gru_recurrent_weights;
 
 	initial begin
-	$readmemb("denoise_gru_bias.mem",				denoise_gru_bias_array,					0, 287);
-	$readmemb("denoise_gru_input_weights.mem",		denoise_gru_input_weights_array,		0, 32831);
-	$readmemb("denoise_gru_recurrent_weights.mem",	denoise_gru_recurrent_weights_array,	0, 27647);
+		$readmemb("denoise_gru_bias.mem",				denoise_gru_bias_array,					0, 287);
+		$readmemb("denoise_gru_input_weights.mem",		denoise_gru_input_weights_array,		0, 32831);
+		$readmemb("denoise_gru_recurrent_weights.mem",	denoise_gru_recurrent_weights_array,	0, 27647);
 	end
 
 	generate 
