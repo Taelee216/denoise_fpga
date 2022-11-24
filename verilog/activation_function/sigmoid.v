@@ -17,14 +17,14 @@ module sigmoid_simple(X,Y);
 
 endmodule
 
-module sigmoid(x,out);
+module sigmoid(x,out_t);
 
     input signed [15:0] x;
-    output reg signed [15:0] out;
-
-    
-   reg signed [7:0] y,z,sum;
-   reg signed [15:0] sq,sh;
+    //output reg signed [15:0] out;
+    output [15:0] out_t;
+    reg signed [15:0] out;
+    reg signed [7:0] y,z,sum;
+    reg signed [15:0] sq,sh;
     
    always@(*)
    begin
@@ -45,7 +45,7 @@ module sigmoid(x,out);
    else
        out=16'b00000001_00000000-sh;
    end
-   
+   assign out_t = out;
 endmodule
 `timescale 1ns / 1ps
 //note that the data in must be 5 bit number 1's compliment number i.e, +14.00 to -14.00

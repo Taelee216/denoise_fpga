@@ -180,7 +180,8 @@ module gru2( noise_gru_state, noise_input, clk );
 	input 	[(   90*float)-1 : 0]	noise_input;
 	input 							clk;
 	
-	reg 	[(   90*float)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
+	//reg 	[(   90*float)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
+	reg 	[(   90*float)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
 	reg		[        float-1 : 0]	weights_scale;
 	reg		[(   48*float)-1 : 0]	sum, tmpsum1, tmpsum2;
 
@@ -193,6 +194,9 @@ module gru2( noise_gru_state, noise_input, clk );
 
 	reg		[        float-1 : 0]	noise_gru_recurrent_weights_array[6911:0];
 	wire	[( 6912*float)-1 : 0]	noise_gru_recurrent_weights;
+	//to solve register error of z
+	wire [(   90*float)-1 : 0]	z = 0;
+	wire [(   90*float)-1 : 0]	r = 0;
 
 	initial begin
 		$readmemb("noise_gru_bias.mem",					noise_gru_bias_array,				0, 143);
