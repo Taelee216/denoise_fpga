@@ -31,13 +31,13 @@ module RNN( gains, vad, feature, clk );
 	generate
 		genvar i;
 		for ( i = 0;	i < input_dense_size;	i = i + 1 ) begin
-			assign noise_input[((i*float)-1) : i-1] = dense_out[i*float -1 : i-1];
+			assign noise_input[(i+1)*float -1 : i*float] = dense_out[(i+1)*float : i*float];
 		end
 		for ( i = 0;	i < vad_gru_size;	i = i + 1 ) begin
-			assign noise_input[(i+input_dense_size)*float -1 : (i+input_dense_size)-1] = vad_gru_state[i*float -1 : i-1];
+			assign noise_input[(i+input_dense_size+1)*float -1 : (i+input_dense_size)*float] = vad_gru_state[(i+1)*float -1 : i*float];
 		end
 		for ( i = 0;	i < INPUT_SIZE; i = i + 1 ) begin 
-			assign noise_input[(i+input_dense_size+vad_gru_size)*float -1 : (i+input_dense_size+vad_gru_size) -1] = feature[i*float -1 : i-1];
+			assign noise_input[(i+input_dense_size+vad_gru_size+1)*float -1 : (i+input_dense_size+vad_gru_size)] = feature[(i+1)*float -1 : i*float];
 		end
 	endgenerate
 
@@ -45,13 +45,13 @@ module RNN( gains, vad, feature, clk );
 
 	generate
 		for ( i = 0;	i < vad_gru_size;	i = i + 1 ) begin
-			assign denoise_input[((i*float)-1) : i-1] = vad_gru_state[i*float -1 : i-1];
+			assign denoise_input[(i+1)*float -1 : i*float] = vad_gru_state[(i+1)*float -1 : i*float];
 		end
 		for ( i = 0;	i < noise_gru_size;	i = i + 1 ) begin
-			assign denoise_input[(i+24)*float -1 : (i+24)-1] = noise_gru_state[i*float -1 : i-1];
+			assign denoise_input[(i+input_dense_size +1)*float -1 : (i+input_dense_size)-1] = noise_gru_state[(i+1)*float -1 : i*float];
 		end
 		for ( i = 0;	i < INPUT_SIZE; i = i + 1 ) begin 
-			assign denoise_input[(i+48)*float -1 : (i+48) -1] = feature[i*float -1 : i-1];
+			assign denoise_input[(i+input_dense_size+vad_gru_size +1)*float -1 : (i+input_dense_size + vad_gru_size) -1] = feature[(i+1)*float -1 : i*float];
 		end
 	endgenerate
 
