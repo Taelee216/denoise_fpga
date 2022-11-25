@@ -83,16 +83,16 @@ module tanh_lut #(
         addrb_reg <= phase[AW-1:0] + 1'b1;
     end
 
-    assign tanhb = mem[addrb_reg];
-    assign tanha = mem[addra_reg];
+    assign tanhb = mem[208];
+    assign tanha = mem[207];
     
     
-    wire [31:0] frac,one_minus_frac;
+   wire [31:0] frac,one_minus_frac;
     wire [31:0] p1,p2;
     wire [31:0] one;
     wire [DW-1:0] tanh_temp;
     
-    assign frac = {11'd0, phase[N-AW-'d2-1:0]}; //rest of the LSBs that were not accounted for owing to the limited ROM size
+    assign frac = {{24{1'd0}},phase[7:0]}; //rest of the LSBs that were not accounted for owing to the limited ROM size
     assign one = 32'b00000000_00000001_00000000_00000000;
     assign one_minus_frac = one - frac;
     qmult #(N,Q) mul1 (clk,rst,tanha,frac,p1,ovr1);
@@ -102,5 +102,4 @@ module tanh_lut #(
     //now, if the phase input is above 3 or below -3 then we just output 1, otherwise we output the calculated value
     //we also check for the sign, if the phase is negative, we return 2's complemented version of the calculated value
     assign tanh = (phase [N-1]) ? (phase[N-14] ? (32'b11111111_11111111_00000000_00000000) : (~tanh_temp + 1'b1)) :(phase[N-14] ? (32'b00000000_00000001_00000000_00000000):(tanh_temp));
-    
 endmodule
