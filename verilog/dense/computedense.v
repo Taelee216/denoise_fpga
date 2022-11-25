@@ -76,8 +76,17 @@ module dense1 ( denseout, in, clk); //42 -> 24
 
 		end
 	end
-
-	tanh_lut ddense1 ( ck, rst, tmpout, denseout );
+	generate
+		genvar i;
+		// [(   24*fixed)-1 : 0]	tmpout;
+		for(i =0; i < 24; i = i + 1 ) begin 
+			tanh_lut ddense1[23 : 0] ( 
+				.clk(clk),
+				.rst(rst), 
+				.phase(tmpout[(i+1*fixed) -1 : i*fixed]), 
+				.tanh(denseout[(i+1*fixed) -1 : i*fixed])
+				);
+	endgenerate
 
 endmodule
 
@@ -150,7 +159,7 @@ module dense2 ( vad, vad_gru_state, clk); //24 -> 1
 
 		end
 	end
-
+	
 	sigmoid_lut ddense2 ( clk , tmpout, vad );
 
 endmodule
