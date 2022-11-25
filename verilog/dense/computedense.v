@@ -77,15 +77,16 @@ module dense1 ( denseout, in, clk); //42 -> 24
 		end
 	end
 	generate
-		genvar i;
 		// [(   24*fixed)-1 : 0]	tmpout;
-		for(i =0; i < 24; i = i + 1 ) begin 
+		genvar k;
+		for(k =0; k < 24; k = k + 1 ) begin 
 			tanh_lut ddense1[23 : 0] ( 
 				.clk(clk),
 				.rst(rst), 
-				.phase(tmpout[(i+1*fixed) -1 : i*fixed]), 
-				.tanh(denseout[(i+1*fixed) -1 : i*fixed])
+				.phase(tmpout[(k+1*fixed) -1 : k*fixed]), 
+				.tanh(denseout[(k+1*fixed) -1 : k*fixed])
 				);
+		end
 	endgenerate
 
 endmodule
