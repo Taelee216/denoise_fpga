@@ -8,11 +8,9 @@ module qmult #(
 	)
 	(
 	 input                  clk,
-	 input                  rst,
 	 input			[N-1:0]	a,
 	 input			[N-1:0]	b,
-	 output         [N-1:0] q_result,    //output quantized to same number of bits as the input
-	 output			overflow             //signal to indicate output greater than the range of our format
+	 output         [N-1:0] q_result    //output quantized to same number of bits as the input
 	 );
 	 
 	 //	The underlying assumption, here, is that both fixed-point values are of the same length (N,Q)
@@ -32,21 +30,13 @@ module qmult #(
 	
 	assign multiplicand = (a[N-1]) ? a_2cmp : a;              
 	assign multiplier   = (b[N-1]) ? b_2cmp : b;
-	
- //   always @(posedge clk)                                     //pipelining a bit in order to prevent too much combo delay
- //   begin
- //   if(rst)
- //       f_result <= 0;
- //   else
-	 assign f_result = multiplicand[N-2:0] * multiplier[N-2:0];  //We remove the sign bit for multiplication
-//    end
+
+	assign f_result = multiplicand[N-2:0] * multiplier[N-2:0];  //We remove the sign bit for multiplication
 	
 	assign q_result[N-1] = a[N-1]^b[N-1];                     //Sign bit of output would be XOR or input sign bits
 	assign quantized_result = f_result[N-2+Q:Q];              //Quantization of output to required number of bits
 	assign quantized_result_2cmp = ~quantized_result[N-2:0] + 1'b1;  //2's complement of quantized_result  {(N-1){1'b1}} - 
-	assign q_result[N-2:0] = (a[N-1]^b[N-1]) ? quantized_result_2cmp : quantized_result; //If the result is negative, we return a 2's complement representation 
-																						 //of the output value
-	assign overflow = (f_result[2*N-2:N-1+Q] > 0) ? 1'b1 : 1'b0;
+	assign q_result[N-2:0] = (a[N-1]^b[N-1]) ? quantized_result_2cmp : quantized_result; //If the result is negative, we return a 2's complement representation of the output value
 endmodule
 
 module tanh_lut #(
@@ -57,17 +47,14 @@ module tanh_lut #(
 	parameter			Q = 16
 	)(
 	input				clk,
-	input				rst,
 	input	[N-1:0]		phase,
 	output	[DW-1:0]	tanh
 	);
 	
 	reg 	[AW-1:0]	addra_reg;
+	reg 	[AW-1:0]	addrb_reg;
 	wire	[DW-1:0]	tanha;
 	wire	[DW-1:0]	tanhb;
-	wire 				ovr1, ovr2;
-
-	reg 	[AW-1:0]	addrb_reg;
 
 	
 	(* ram_style = "block" *)reg [DW-1:0] mem [(1<<AW)-1:0];  
@@ -83,20 +70,19 @@ module tanh_lut #(
 		addrb_reg <= phase[17:8] + 1'b1;
 	end
 
-	assign tanhb = mem[addrb_reg];
 	assign tanha = mem[addra_reg];
+	assign tanhb = mem[addrb_reg];
 	
-	
-	wire [31:0] frac,one_minus_frac;
-	wire [31:0] p1,p2;
+	wire [31:0] frac, one_minus_frac;
+	wire [31:0] p1, p2;
 	wire [31:0] one;
 	wire [DW-1:0] tanh_temp;
 	
 	assign frac = {{24{1'd0}},phase[7:0]}; //rest of the LSBs that were not accounted for owing to the limited ROM size
 	assign one = 32'b00000000_00000001_00000000_00000000;
 	assign one_minus_frac = one - frac;
-	qmult #(N,Q) mul1 (clk,rst,tanha,frac,p1,ovr1);
-	qmult #(N,Q) mul2 (clk,rst,tanhb,one_minus_frac,p2,ovr2);    
+	qmult #(N,Q) mul1 (clk,tanha,frac,p1);
+	qmult #(N,Q) mul2 (clk,tanhb,one_minus_frac,p2);    
 	assign tanh_temp = p1 + p2;    // linear interpolation formula: x*Pi + (1-x)*Pi+1
 	
 	//now, if the phase input is above 3 or below -3 then we just output 1, otherwise we output the calculated value

@@ -97,7 +97,7 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		end
 	end
 
-	sigmoid sigforz(tmpz, z);
+	sigmoid_lut sigforz1(.clk(clk), .phase(tmpz), .sigmoid(z));
 
 
 	always @(posedge clk) begin
@@ -126,7 +126,7 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		end
 	end
 
-	sigmoid sigforh(tmpr, r);
+	sigmoid_lut sigforr1(.clk(clk), .phase(tmpr), .sigmoid(r));
 
 	integer gi;
 
@@ -158,6 +158,8 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			gi <= gi + 1;
 		end
 	end
+
+	tanh_lut tanhforg1(.clk(clk), .phase(sum), .tanh(tmptmp));
 	
 	assign vad_gru_state = h;
 
@@ -263,8 +265,8 @@ module gru2( noise_gru_state, noise_input, clk );
 		end
 	end
 
-	sigmoid sigforz(tmpz, z);
-	//
+	sigmoid_lut sigforz2(.clk(clk), .phase(tmpz), .sigmoid(z));
+
 	assign z_out = z;
 	
 	always @(posedge clk) begin
