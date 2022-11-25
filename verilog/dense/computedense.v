@@ -141,6 +141,8 @@ module dense2 ( vad, vad_gru_state, clk); //24 -> 1
 		nb_input 		= 24;
 		nb_neurons 		= 1;
 		stride 			= 1;
+		index1			= 0;
+		index2			= 0;
 	end
 
 	always @(posedge clk) begin
@@ -221,6 +223,8 @@ module dense3 ( gains, denoise_gru_state, clk );
 		nb_input		= 96;
 		nb_neurons		= 22;
 		stride			= 22;
+		index1			= 0;
+		index2			= 0;
 	end
 
 	always @(posedge clk) begin

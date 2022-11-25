@@ -61,7 +61,7 @@ module tanh_lut #(
     reg 	[AW-1:0]	addra_reg;
     wire	[DW-1:0]	tanha;
     wire	[DW-1:0]	tanhb;
-    wire 				ovr1, ovr2;
+
 
     reg 	[AW-1:0]	addrb_reg;
 
@@ -91,8 +91,8 @@ module tanh_lut #(
     assign frac = {{24{1'd0}},phase[7:0]}; //rest of the LSBs that were not accounted for owing to the limited ROM size
     assign one = 32'b00000000_00000001_00000000_00000000;
     assign one_minus_frac = one - frac;
-    qmult #(N,Q) mul1 (clk,rst,tanha,frac,p1,ovr1);
-    qmult #(N,Q) mul2 (clk,rst,tanhb,one_minus_frac,p2,ovr2);    
+    qmult #(N,Q) mul1 (clk,tanha,frac,p1);
+    qmult #(N,Q) mul2 (clk,tanhb,one_minus_frac,p2);    
     assign tanh_temp = p1 + p2;    // linear interpolation formula: x*Pi + (1-x)*Pi+1
     
     //now, if the phase input is above 3 or below -3 then we just output 1, otherwise we output the calculated value
