@@ -24,6 +24,9 @@ module dense1 ( denseout, in, clk); //42 -> 24
 	reg     [        fixed-1 : 0]   input_dense_weights_array[1007:0];
 	wire    [( 1008*fixed)-1 : 0]   input_dense_weights;
 
+	//
+	wire rst;
+
 	initial begin 
 		// $readmemb("bin_memory_file_fixed.mem", memory_array, [start_address], [end_address]);
 		$readmemb("input_dense_bias_fixed.mem", input_dense_bias_array, 0, 23);
@@ -74,7 +77,7 @@ module dense1 ( denseout, in, clk); //42 -> 24
 		end
 	end
 
-	tansig ddense1 ( tmpout, denseout );
+	tanh_lut ddense1 ( ck, rst, tmpout, denseout );
 
 endmodule
 
@@ -148,7 +151,7 @@ module dense2 ( vad, vad_gru_state, clk); //24 -> 1
 		end
 	end
 
-	sigmoid ddense2 ( tmpout, vad );
+	sigmoid_lut ddense2 ( clk , tmpout, vad );
 
 endmodule
 
@@ -221,7 +224,7 @@ module dense3 ( gains, denoise_gru_state, clk );
 		end
 	end
 
-	sigmoid ddense3 ( tmpout, gains );
+	sigmoid_lut ddense3 ( clk, tmpout, gains );
 
 endmodule
 

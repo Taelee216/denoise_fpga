@@ -294,7 +294,7 @@ module gru2( noise_gru_state, noise_input, clk );
 			tmpr[index1*fixed +: 32] <= weights_scale * sum;
 		end
 	end
-	sigmoid sigforh(tmpr, r);
+	sigmoid_lut sigforh(clk, tmpr, r);
 
 	always @(posedge clk) begin
 
@@ -428,7 +428,7 @@ module gru3(denoise_gru_state, denoise_input, clk);
 			tmpz[index1*fixed +: 32] <= weights_scale * sum;
 		end
 	end
-	sigmoid sigforz(tmpz, z);
+	sigmoid_lut sigforz(clk, tmpz, z);
 
 
 	always @(posedge clk) begin
@@ -456,7 +456,7 @@ module gru3(denoise_gru_state, denoise_input, clk);
 			tmpr[index1*fixed +: 32] <= weights_scale * sum;
 		end
 	end
-	sigmoid sigforh(tmpr, r);
+	sigmoid_lut sigforh(clk, tmpr, r);
 
 
 	always @(posedge clk) begin
