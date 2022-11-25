@@ -25,7 +25,6 @@ module dense1 ( denseout, in, clk); //42 -> 24
 	wire    [( 1008*fixed)-1 : 0]   input_dense_weights;
 
 	//
-	wire rst = 1'b0;
 
 	initial begin 
 		// $readmemb("bin_memory_file_fixed.mem", memory_array, [start_address], [end_address]);
@@ -65,6 +64,7 @@ module dense1 ( denseout, in, clk); //42 -> 24
 			sum <= sum + input_dense_bias[index1*fixed +: 32];
 
 			if(index2 < nb_neurons) begin
+
 				tmpsum	<= input_dense_weights[(index2*stride+index1)*fixed +:32] * in[index2*fixed +: 32];
 				sum	=  tmpsum + sum;
 				index2	<= index2 + 1;
@@ -76,13 +76,13 @@ module dense1 ( denseout, in, clk); //42 -> 24
 
 		end
 	end
+	
 	generate
 		// [(   24*fixed)-1 : 0]	tmpout;
 		genvar k;
 		for(k =0; k < 24; k = k + 1 ) begin 
 			tanh_lut ddense1[23 : 0] ( 
 				.clk(clk),
-				.rst(rst), 
 				.phase(tmpout[(k+1)*fixed -1 : k*fixed]), 
 				.tanh(denseout[(k+1)*fixed -1 : k*fixed])
 				);
@@ -160,6 +160,13 @@ module dense2 ( vad, vad_gru_state, clk); //24 -> 1
 
 		end
 	end
+	//generate sum
+	/*generate
+		genvar idx;
+		for (idx = 0; idx < nb_input; idx = idx +1) begin
+			sum <= sum + vad_output_bias[idx*fixed +: fixed];
+		end
+	endgenerate*/
 	
 	sigmoid_lut ddense2 ( clk , tmpout, vad );
 

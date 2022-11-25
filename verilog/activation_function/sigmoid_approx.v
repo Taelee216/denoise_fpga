@@ -11,10 +11,9 @@ module sigmoid_lut #(
 	);
 
 	wire	[DW-1:0]	tanh_out;
-	wire rst = 1'b0;
+
 	tanh_lut tanhsig_0 (
 		.clk(clk),
-		.rst(rst),
 		.phase(phase >> 1),
 		.tanh(tanh_out)
 	);
