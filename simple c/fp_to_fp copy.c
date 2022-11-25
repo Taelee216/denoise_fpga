@@ -41,7 +41,7 @@ void out_fixed(fixed_point_t f) {
 		p--;
 	}
 	// for (i = 0 ; i< 16 ; i++) fprintf(f_out, "%d", tmp[i]);
-    for (i = 0 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
+    for (i = 6 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
 }
 
 
