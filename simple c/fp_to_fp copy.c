@@ -7,23 +7,29 @@
 FILE *f_out;
 
 
-
-
-#define FIXED_POINT_FRACTIONAL_BITS 8
-
 typedef uint16_t fixed_point_t;
 
 fixed_point_t arr[1024];
 
-double fixed_to_double(fixed_point_t input);
-fixed_point_t double_to_fixed(double input);
+double fixed8_to_double(fixed_point_t input);
+fixed_point_t double_to_fixed8(double input);
+double fixed12_to_double(fixed_point_t input);
+fixed_point_t double_to_fixed12(double input);
 
-inline double fixed_to_double(fixed_point_t input) {
-    return ((double)input / (double)(1 << FIXED_POINT_FRACTIONAL_BITS));
+inline double fixed8_to_double(fixed_point_t input) {
+    return ((double)input / (double)(1 << 8));
 }
 
-inline fixed_point_t double_to_fixed(double input) {
-    return (fixed_point_t)(round(input * (1 << FIXED_POINT_FRACTIONAL_BITS)));
+inline fixed_point_t double_to_fixed8(double input) {
+    return (fixed_point_t)(round(input * (1 << 8)));
+}
+
+inline double fixed12_to_double(fixed_point_t input) {
+    return ((double)input / (double)(1 << 12));
+}
+
+inline fixed_point_t double_to_fixed12(double input) {
+    return (fixed_point_t)(round(input * (1 << 12)));
 }
 
 void out_fixed(fixed_point_t f) {
@@ -41,7 +47,7 @@ void out_fixed(fixed_point_t f) {
 		p--;
 	}
 	// for (i = 0 ; i< 16 ; i++) fprintf(f_out, "%d", tmp[i]);
-    for (i = 6 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
+    for (i = 0 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
 }
 
 
@@ -63,7 +69,7 @@ int main() {
 	*/
 	
 	for (int i = 0; i < 1024; i++) {
-		tanh[i] = tanhf(fixed_to_double(arr[i]));
+		tanh[i] = tanhf(fixed8_to_double(arr[i]));
 		printf("%lf\n", tanh[i]);
 	}
 
@@ -71,7 +77,7 @@ int main() {
 	size    = sizeof(tanh) / sizeof(tanh[0]);
 	for (int i = 0; i < size; i++) {
 		// fprintf(f_out, "assign\tinput_dense_bias_array[%5d] = 32'b", i);
-		out_fixed(double_to_fixed(tanh[i]));
+		out_fixed(double_to_fixed12(tanh[i]));
 		fprintf(f_out, "\n");
 		// fprintf(f_out, ";\n");
 	}
