@@ -96,8 +96,16 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 
 		end
 	end
-
-	sigmoid_lut sigforz1(.clk(clk), .phase(tmpz), .sigmoid(z));
+	generate
+		genvar i;
+		for (i=0; i<24; i=i+1) begin
+			sigmoid_lut sigforz1[23:0](
+				.clk(clk),
+				.phase(tmpz[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(z[(i+1)*fixed-1 : i*fixed])
+				);
+		end
+	endgenerate
 
 
 	always @(posedge clk) begin
@@ -126,8 +134,17 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		end
 	end
 
-	sigmoid_lut sigforr1(.clk(clk), .phase(tmpr), .sigmoid(r));
-
+	//sigmoid_lut sigforr1(.clk(clk), .phase(tmpr), .sigmoid(r));
+	generate
+		genvar i;
+		for (i=0; i<24; i=i+1) begin
+			sigmoid_lut sigforr1[23:0](
+				.clk(clk),
+				.phase(tmpr[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(r[(i+1)*fixed-1 : i*fixed])
+				);
+		end
+	endgenerate
 	integer gi;
 
 	always @(posedge clk) begin
@@ -159,8 +176,17 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		end
 	end
 
-	tanh_lut tanhforg1(.clk(clk), .phase(sum), .tanh(tmptmp));
-	
+	//tanh_lut tanhforg1(.clk(clk), .phase(sum), .tanh(tmptmp));
+	generate
+		genvar i;
+		for (i=0; i<24; i=i+1) begin
+			sigmoid_lut sigforz1[23:0](
+				.clk(clk),
+				.phase(tmpz[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(z[(i+1)*fixed-1 : i*fixed])
+				);
+		end
+	endgenerate
 	assign vad_gru_state = h;
 
 endmodule
@@ -265,7 +291,17 @@ module gru2( noise_gru_state, noise_input, clk );
 		end
 	end
 
-	sigmoid_lut sigforz2(.clk(clk), .phase(tmpz), .sigmoid(z));
+	//sigmoid_lut sigforz2(.clk(clk), .phase(tmpz), .sigmoid(z));
+	generate
+		genvar i;
+		for (i = 0; i<90; i+=1) begin
+			sigmoid_lut sigforz2[89 : 0](
+				.clk(clk),
+				.phase(tmpz[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(z[(i+1)*fixed-1 : i*fixed])
+			)
+		end
+	endgenerate
 
 	assign z_out = z;
 	
@@ -294,7 +330,17 @@ module gru2( noise_gru_state, noise_input, clk );
 			tmpr[index1*fixed +: 32] <= weights_scale * sum;
 		end
 	end
-	sigmoid_lut sigforh(clk, tmpr, r);
+	//sigmoid_lut sigforr(clk, tmpr, r);
+	generate
+		genvar i;
+		for (i = 0; i<90; i+=1) begin
+			sigmoid_lut sigforr[89 : 0](
+				.clk(clk),
+				.phase(tmpr[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(r[(i+1)*fixed-1 : i*fixed])
+			)
+		end
+	endgenerate
 
 	always @(posedge clk) begin
 
@@ -428,7 +474,17 @@ module gru3(denoise_gru_state, denoise_input, clk);
 			tmpz[index1*fixed +: 32] <= weights_scale * sum;
 		end
 	end
-	sigmoid_lut sigforz(clk, tmpz, z);
+	//sigmoid_lut sigforz(clk, tmpz, z);
+	generate
+		genvar i;
+		for (i = 0; i<114; i+=1) begin
+			sigmoid_lut sigforz[89 : 0](
+				.clk(clk),
+				.phase(tmpz[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(z[(i+1)*fixed-1 : i*fixed])
+			)
+		end
+	endgenerate
 
 
 	always @(posedge clk) begin
@@ -456,8 +512,17 @@ module gru3(denoise_gru_state, denoise_input, clk);
 			tmpr[index1*fixed +: 32] <= weights_scale * sum;
 		end
 	end
-	sigmoid_lut sigforh(clk, tmpr, r);
-
+	//sigmoid_lut sigforh(clk, tmpr, r);
+	generate
+		genvar i;
+		for (i = 0; i<90; i+=1) begin
+			sigmoid_lut sigforh[89 : 0](
+				.clk(clk),
+				.phase(tmpr[(i+1)*fixed-1 : i*fixed]),
+				.sigmoid(r[(i+1)*fixed-1 : i*fixed])
+			)
+		end
+	endgenerate
 
 	always @(posedge clk) begin
 		index1 =0; index2 =0; index3 = 0;
