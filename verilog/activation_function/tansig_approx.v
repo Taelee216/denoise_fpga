@@ -79,12 +79,12 @@ module tanh_lut #(
     
     always@(posedge clk)
     begin
-        addra_reg <= phase[AW-1:0];
-        addrb_reg <= phase[AW-1:0] + 1'b1;
+        addra_reg <= phase[17:8];
+        addrb_reg <= phase[17:8] + 1'b1;
     end
 
-    assign tanhb = mem[208];
-    assign tanha = mem[207];
+    assign tanhb = mem[addrb_reg];
+    assign tanha = mem[addra_reg];
     
     
    wire [31:0] frac,one_minus_frac;
