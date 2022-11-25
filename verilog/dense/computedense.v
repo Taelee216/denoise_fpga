@@ -25,7 +25,7 @@ module dense1 ( denseout, in, clk); //42 -> 24
 	wire    [( 1008*fixed)-1 : 0]   input_dense_weights;
 
 	//
-	wire rst;
+	wire rst = 1'b0;
 
 	initial begin 
 		// $readmemb("bin_memory_file_fixed.mem", memory_array, [start_address], [end_address]);
@@ -83,8 +83,8 @@ module dense1 ( denseout, in, clk); //42 -> 24
 			tanh_lut ddense1[23 : 0] ( 
 				.clk(clk),
 				.rst(rst), 
-				.phase(tmpout[(k+1*fixed) -1 : k*fixed]), 
-				.tanh(denseout[(k+1*fixed) -1 : k*fixed])
+				.phase(tmpout[(k+1)*fixed -1 : k*fixed]), 
+				.tanh(denseout[(k+1)*fixed -1 : k*fixed])
 				);
 		end
 	endgenerate
