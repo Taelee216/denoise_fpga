@@ -90,8 +90,8 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		index3_ready = 1'b0;
 	end
 
-	wire	qmult_a, qmult_b, qmult_result;
-	module qmult (.clk(clk), .a(qmult_a), .b(qmult_b), .q_result(qmult_result));
+	reg	qmult_a, qmult_b, qmult_result;
+	qmult mul_1(.clk(clk), .a(qmult_a), .b(qmult_b), .q_result(qmult_result));
 
 	always @(posedge clk) begin
 		if(index1 < N) begin
@@ -574,4 +574,3 @@ module gru3(denoise_gru_state, denoise_input, clk);
 	assign denoise_gru_state = h;
 
 endmodule
-	
