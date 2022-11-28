@@ -94,6 +94,10 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 	reg [fixed-1:0] sigmoid_r_in, sigmoid_r_out;
 	sigmoid_lut sigforr1 (.clk(clk), .phase(sigmoid_r_in), .sigmoid(sigmoid_r_out));
 
+	reg [fixed-1:0] tanh_g_in, tanh_g_out;
+	tanh_lut tanhforg1 ( .clk(clk), .phase(tanh_g_in), .tanh(tanh_g_out));
+
+
 	always @(posedge clk) begin
 		if(pass_1 == 1'b0) begin 
 			if(index1 < N) begin
@@ -138,11 +142,11 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 					index3_ready = 1'b1;
 				end
 
-				if (index1_ready && index2_ready) begin
+				if (index2_ready && index3_ready) begin
 					index1_mul1_b = sum1;
 					index1_mul2_b = sum2;
-					sigmoid_r_in = index1_mul1_result;
-					sigmoid_z_in = index1_mul2_result;
+					sigmoid_z_in = index1_mul1_result;
+					sigmoid_r_in = index1_mul2_result;
 					z[index1*fixed +: fixed] = sigmoid_z_out;
 					r[index1*fixed +: fixed] = sigmoid_r_out;
 					index1	= index1 + 1;
@@ -150,7 +154,7 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 					index2_ready = 1'b0;
 					index3_ready = 1'b0;
 				end
-			end
+			end/1
 			else begin 
 				pass_1 = 1'b1;
 				index1 = 0; 
@@ -194,6 +198,16 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 				end
 				else begin
 					index3_ready = 1'b1;
+				end
+
+				if (index2_ready && index3_ready) begin
+					index1_mul1_b = sum3;
+					tanh_g_in = index1_mul1_result;
+					sum3 = sum3 + tanh_g_out;
+					index1	= index1 + 1;
+					index1_ready = 1'b1;
+					index2_ready = 1'b0;
+					index3_ready = 1'b0;
 				end
 
 			end
