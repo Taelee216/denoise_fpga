@@ -22,9 +22,9 @@ module RNN( gains, vad, feature, clk );
 	wire 	[(   96*fixed)-1 : 0]	denoise_gru_state;
 	wire 	[(  114*fixed)-1 : 0]	denoise_input;
 
-	dense1	compute_dense1	( dense_out,			feature,			clk );
-	gru1	compute_gru1	( vad_gru_state,		dense_out,			clk );
-	dense2	compute_dense2	( vad,					vad_gru_state,		clk );
+	dense1	compute_dense1	( dense_out,			feature,			clk,	valid );
+	gru1	compute_gru1	( vad_gru_state,		dense_out,			clk,	valid );
+	dense2	compute_dense2	( vad,					vad_gru_state,		clk,	valid );
 	
 	generate
 		genvar i;
