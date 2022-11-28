@@ -90,8 +90,14 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		index3_ready = 1'b0;
 	end
 
-	reg	qmult_a, qmult_b, qmult_result;
-	qmult mul_1(.clk(clk), .a(qmult_a), .b(qmult_b), .q_result(qmult_result));
+	reg	index1_mul_b, index1_mul_result;
+	qmult index1_mul(.clk(clk), .a(weights_scale), .b(index1_mul_b), .q_result(index1_mul_result));
+
+	reg	index2_mul_a, index2_mul_b, index2_mul_result;
+	qmult index2_mul(.clk(clk), .a(index2_mul_a), .b(index2_mul_b), .q_result(index2_mul_result));
+
+	reg	index3_mul_a, index3_mul_b, index3_mul_result;
+	qmult index3_mul(.clk(clk), .a(index3_mul_a), .b(index3_mul_b), .q_result(index3_mul_result));
 
 	always @(posedge clk) begin
 		if(index1 < N) begin
@@ -101,9 +107,9 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			end
 
 			if(index2 < M) begin
-				qmult_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
-				qmult_b = dense_out[index2*fixed +: fixed];
-				tmpsum1	= qmult_result;
+				index2_mul_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
+				index2_mul_b = dense_out[index2*fixed +: fixed];
+				tmpsum1	= index2_mul_result;
 				sum	= tmpsum1 + sum;
 				index2	= index2 + 1;
 			end
@@ -112,7 +118,9 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			end
 
 			if(index3 < M) begin
-				tmpsum2	= vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed] * vad_gru_state[index3*fixed +: fixed];
+				index3_mul_a = vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed];
+				index2_mul_b = vad_gru_state[index3*fixed +: fixed];
+				tmpsum2	= index3_mul_result;
 				sum	= tmpsum2 + sum;
 				index3	= index3 + 1;
 			end
@@ -121,7 +129,8 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			end
 
 			if (index1_ready && index2_ready) begin
-				tmpz[index1*fixed +: fixed] = weights_scale * sum;
+				index1_mul_b = sum;
+				tmpz[index1*fixed +: fixed] = index1_mul_result;
 				index1	= index1 + 1;
 				index1_ready = 1'b1;
 				index2_ready = 1'b0;
