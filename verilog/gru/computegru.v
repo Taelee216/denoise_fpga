@@ -94,7 +94,8 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	reg	[fixed-1:0] index2_mul1_a, index2_mul1_b;
 	wire [fixed-1:0] index2_mul1_result;
 	qmult index2_mul1(.clk(clk), .a(index2_mul1_a), .b(index2_mul1_b), .q_result(index2_mul1_result));
-	reg	[fixed-1:0] index2_mul2_a, index2_mul2_b, index2_mul2_result;
+	reg	[fixed-1:0] index2_mul2_a, index2_mul2_b;
+	wire [fixed-1:0] index2_mul2_result;
 	qmult index2_mul2(.clk(clk), .a(index2_mul2_a), .b(index2_mul2_b), .q_result(index2_mul2_result));
 
 	reg	[fixed-1:0] index3_mul1_a, index3_mul1_b;
