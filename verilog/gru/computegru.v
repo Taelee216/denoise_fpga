@@ -60,10 +60,20 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 				assign vad_gru_recurrent_weights[i*fixed+bit]	= vad_gru_recurrent_weights_array[i][bit];	
 			end
 		end
-
-
-
 	endgenerate	
+
+
+	generate
+		genvar k;
+		for (k=0; k<24; k=k+1) begin
+			sigmoid_lut sigforz1[23:0](
+				.clk(clk),
+				.phase(tmpz[(k+1)*fixed-1 : k*fixed]),
+				.sigmoid(z[(k+1)*fixed-1 : k*fixed])
+			);
+		end
+	endgenerate
+
 
 	//compute update gate and reset gate  at once?
 
@@ -75,6 +85,7 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		//z 		= 0;
 		//r 		= 0;
 		h 		= 0;
+		index1_ready = 1'b1;
 	end
 
 
@@ -106,24 +117,13 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			if (index1_ready && index2_ready) begin
 				tmpz[index1*fixed +: fixed] = weights_scale * sum;
 				index1	= index1 + 1;
-				index2_ready = 1'b1;
+				index1_ready = 1'b1;
 				index2_ready = 1'b0;
 				index3_ready = 1'b0;
 			end
 		end
 	end
-	generate
-		genvar k;
-		for (k=0; k<24; k=k+1) begin
-			sigmoid_lut sigforz1[23:0](
-				.clk(clk),
-				.phase(tmpz[(k+1)*fixed-1 : k*fixed]),
-				.sigmoid(z[(k+1)*fixed-1 : k*fixed])
-				);
-		end
-	endgenerate
-
-
+	
 	always @(posedge clk) begin
 
 		index1 =0; index2 =0; index3 = 0;
