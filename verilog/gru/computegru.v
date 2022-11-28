@@ -21,9 +21,9 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	output reg							valid;
 	output	[(nb_neurons*fixed)-1 : 0]	output_state;
 	
-	reg		[(   24*fixed)-1 : 0]	z, r, tmpz, tmpr, h, tmph, tmptmp;
+	reg		[(   24*fixed)-1 : 0]	z, r, h;
 	reg		[        fixed-1 : 0]	weights_scale;
-	reg		[(   24*fixed)-1 : 0]	sum1, sum2, sum3, tmpsum1, tmpsum2;
+	reg		[(      fixed)-1 : 0]	sum1, sum2, sum3;
 	
 	reg		[        fixed-1 : 0]   vad_gru_bias_array[71:0];
 	wire	[(   72*fixed)-1 : 0]   vad_gru_bias;
@@ -66,8 +66,6 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	// for compute output
 	initial	begin 
 		weights_scale	= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
-		tmpsum1		= 0;
-		tmpsum2		= 0;
 		index1_ready	= 1'b1;
 		index2_ready	= 1'b0;
 		index3_ready	= 1'b0;
@@ -75,6 +73,8 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 		pass1_end		= 1'b0;
 		pass2_end		= 1'b0;
 		valid			= 1'b0;
+		sum1 	= vad_gru_bias[fixed-1:0];
+		sum2	= vad_gru_bias[(nb_neurons+1)*fixed - 1 : nb_neurons*fixed];
 	end
 
 	reg	[fixed-1:0] index1_mul1_b;
@@ -120,8 +120,8 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 			if(pass_1 == 1'b1) begin 
 				if(index1 < N) begin
 					if (index1_ready) begin
-						sum1 	= vad_gru_bias[index1*fixed   +: fixed];
-						sum2	= vad_gru_bias[index1*fixed+N +: fixed];
+						sum1 	= vad_gru_bias[index1*fixed     +: fixed];
+						sum2	= vad_gru_bias[(index1+N)*fixed +: fixed];
 						index1_ready = 1'b0;
 						index2 = 0; 
 						index3 = 0;
@@ -185,8 +185,6 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 					index1_ready = 1'b1;
 					index2_ready = 1'b0;
 					index3_ready = 1'b0;
-					tmpsum1 = 0; 
-					tmpsum2 = 0;
 					pass1_end = 1'b1;
 				end
 			end
@@ -247,15 +245,12 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 					pass2_end = 1'b0;
 				end
 				else begin 
-					pass_1 = 1'b1;
 					index1 = 0; 
 					index2 = 0; 
 					index3 = 0;
 					index1_ready = 1'b1;
 					index2_ready = 1'b0;
 					index3_ready = 1'b0;
-					tmpsum1 = 0; 
-					tmpsum2 = 0;
 					pass2_end = 1'b1;
 				end
 			end 
@@ -278,7 +273,7 @@ module gru2( noise_gru_state, noise_input, clk );
 	integer		index3	= 0;
 	integer		M		= 90;
 	integer		N		= 48;
-	integer		stride	= 144;
+	integer		stride	= 114;
 	integer		one		= 1;
 
 	output 	[(   48*fixed)-1 : 0]	noise_gru_state;
@@ -293,8 +288,8 @@ module gru2( noise_gru_state, noise_input, clk );
 	wire [(   90*fixed)-1 : 0]	z = 0 ;
 	wire [(   90*fixed)-1 : 0]	r = 0;
 
-	reg		[        fixed-1 : 0]	noise_gru_bias_array[143:0];
-	wire	[(  144*fixed)-1 : 0]	noise_gru_bias;
+	reg		[        fixed-1 : 0]	noise_gru_bias_array[113:0];
+	wire	[(  114*fixed)-1 : 0]	noise_gru_bias;
 
 	reg		[        fixed-1 : 0]	noise_gru_input_weights_array[12959:0];
 	wire	[(12960*fixed)-1 : 0]	noise_gru_input_weights;
@@ -304,14 +299,14 @@ module gru2( noise_gru_state, noise_input, clk );
 
 
 	initial begin
-		$readmemb("noise_gru_bias_fixed.mem",					noise_gru_bias_array,				0, 143);
+		$readmemb("noise_gru_bias_fixed.mem",					noise_gru_bias_array,				0, 113);
 		$readmemb("noise_gru_input_weights_fixed.mem",		noise_gru_input_weights_array,		0, 12959);
 		$readmemb("noise_gru_recurrent_weights_fixed.mem",	noise_gru_recurrent_weights_array,	0, 6911);
 	end
 
 	generate 
 		genvar i, bit;
-		for ( i = 0 ; i < 144 ; i = i + 1 ) begin	
+		for ( i = 0 ; i < 114 ; i = i + 1 ) begin	
 			for ( bit = 0 ; bit < fixed ; bit = bit + 1 ) begin	
 				assign noise_gru_bias[i*fixed+bit]				= noise_gru_bias_array[i][bit];	
 			end
