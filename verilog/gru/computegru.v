@@ -195,6 +195,10 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 					if (index1_ready) begin
 						sum3	= vad_gru_bias[index1*fixed + 2*N +: fixed];
 						index1_ready = 1'b0;
+						index2 = 0; 
+						index3 = 0;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
 					end
 
 					if(index2 < M) begin
