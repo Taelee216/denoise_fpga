@@ -1,4 +1,4 @@
-module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
+module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 24 -> 24
 
 	parameter	fixed		= 32;
 	parameter	nb_inputs	= 24; 
@@ -15,10 +15,11 @@ module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
 	reg			pass_1;
 	reg			pass1_end, pass2_end;
 
-	output reg							valid;
-	output	[(nb_neurons*fixed)-1 : 0]	vad_gru_state;
-	input	[( nb_inputs*fixed)-1 : 0]	dense_out;
+	input	[(nb_neurons*fixed)-1 : 0]	input_state;
+	input	[( nb_inputs*fixed)-1 : 0]	input_vecter;
 	input								clk, start;
+	output reg							valid;
+	output	[(nb_neurons*fixed)-1 : 0]	output_state;
 	
 	reg		[(   24*fixed)-1 : 0]	z, r, tmpz, tmpr, h, tmph, tmptmp;
 	reg		[        fixed-1 : 0]	weights_scale;
@@ -129,10 +130,10 @@ module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
 
 					if(index2 < M) begin
 						index2_mul1_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
-						index2_mul1_b = dense_out[index2*fixed +: fixed];
+						index2_mul1_b = input_vecter[index2*fixed +: fixed];
 
 						index2_mul2_a = vad_gru_input_weights[(N+index2*stride+index1)*fixed +: fixed];
-						index2_mul2_b = dense_out[index2*fixed +: fixed];
+						index2_mul2_b = input_vecter[index2*fixed +: fixed];
 
 						sum1 = sum1 + index2_mul1_result;
 						sum2 = sum2 + index2_mul2_result;
@@ -145,10 +146,10 @@ module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
 
 					if(index3 < M) begin
 						index3_mul1_a = vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed];
-						index3_mul1_b = vad_gru_state[index3*fixed +: fixed];
+						index3_mul1_b = input_state[index3*fixed +: fixed];
 
 						index3_mul2_a = vad_gru_recurrent_weights[(N+index3*stride+index1)*fixed +: fixed];
-						index3_mul2_b = vad_gru_state[index3*fixed +: fixed];
+						index3_mul2_b = input_state[index3*fixed +: fixed];
 
 						sum1	= sum1 + index3_mul1_result;
 						sum2	= sum2 + index3_mul2_result;
@@ -197,7 +198,7 @@ module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
 
 					if(index2 < M) begin
 						index2_mul1_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
-						index2_mul1_b = dense_out[index2*fixed +: fixed];
+						index2_mul1_b = input_vecter[index2*fixed +: fixed];
 
 						sum3 = sum3 + index2_mul1_result;
 
@@ -209,7 +210,7 @@ module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
 
 					if(index3 < M) begin
 						index3_mul1_a = vad_gru_recurrent_weights[(2*N + index3*stride + index1)*fixed +: fixed];
-						index3_mul1_b = vad_gru_state[index3*fixed +: fixed];
+						index3_mul1_b = input_state[index3*fixed +: fixed];
 
 						index3_mul2_a = index3_mul1_result;
 						index3_mul2_b = r[index3*fixed +: fixed];
@@ -227,7 +228,7 @@ module gru1 ( vad_gru_state, dense_out, clk, start, valid );	// 24 -> 24
 						sum3 = tanh_h_out;
 
 						index1_mul3_a = z[index1*fixed +: fixed];
-						index1_mul3_b = vad_gru_state[index1*fixed +: fixed];
+						index1_mul3_b = input_state[index1*fixed +: fixed];
 						index1_mul4_a = one - z[index1*fixed +: fixed];
 						index1_mul4_b = tanh_h_out;
 
