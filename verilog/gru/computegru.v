@@ -3,13 +3,13 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	parameter	fixed		= 32;
 	parameter	nb_inputs	= 24; 
 	parameter	nb_neurons	= 24; 
+	parameter	N			= nb_neurons;
+	parameter	M			= nb_inputs;
+	parameter	stride		= 3 * nb_neurons;
 
 	integer		index1		= 0;
 	integer		index2		= 0;
 	integer		index3		= 0;
-	integer		M			= nb_inputs;
-	integer		N			= nb_neurons;
-	integer		stride		= 3 * nb_neurons;
 	integer		one			= 1;
 	reg			index1_ready, index2_ready, index3_ready;
 	reg			pass_1;
