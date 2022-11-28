@@ -12,19 +12,15 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 	integer		stride		= 3 * nb_neurons;
 	integer		one			= 1;
 	reg			index1_ready, index2_ready, index3_ready;
+	reg			pass_1;
 
 	output	[(nb_neurons*fixed)-1 : 0]	vad_gru_state;
 	input	[( nb_inputs*fixed)-1 : 0]	dense_out;
 	input								clk;
 	
-	reg		[(   24*fixed)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
+	reg		[(   24*fixed)-1 : 0]	z, r, tmpz, tmpr, h, tmph, tmptmp;
 	reg		[        fixed-1 : 0]	weights_scale;
-	reg		[(   24*fixed)-1 : 0]	sum, tmpsum1, tmpsum2;
-
-	//to solve register error of z
-	wire	[(   90*fixed)-1 : 0]	z = 0 ;
-	wire	[(   90*fixed)-1 : 0]	r = 0;
-
+	reg		[(   24*fixed)-1 : 0]	sum1, sum2, sum3, tmpsum1, tmpsum2;
 	
 	reg		[        fixed-1 : 0]   vad_gru_bias_array[71:0];
 	wire	[(   72*fixed)-1 : 0]   vad_gru_bias;
@@ -62,19 +58,6 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		end
 	endgenerate	
 
-
-	generate
-		genvar k;
-		for (k=0; k<24; k=k+1) begin
-			sigmoid_lut sigforz1[23:0](
-				.clk(clk),
-				.phase(tmpz[(k+1)*fixed-1 : k*fixed]),
-				.sigmoid(z[(k+1)*fixed-1 : k*fixed])
-			);
-		end
-	endgenerate
-
-
 	//compute update gate and reset gate  at once?
 
 	// for compute output
@@ -85,97 +68,138 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		//z 		= 0;
 		//r 		= 0;
 		h 		= 0;
-		index1_ready = 1'b1;
-		index2_ready = 1'b0;
-		index3_ready = 1'b0;
+		index1_ready	= 1'b1;
+		index2_ready	= 1'b0;
+		index3_ready	= 1'b0;
+		pass_1			= 1'b0;
 	end
 
-	reg	index1_mul_b, index1_mul_result;
-	qmult index1_mul(.clk(clk), .a(weights_scale), .b(index1_mul_b), .q_result(index1_mul_result));
+	reg	[fixed-1:0] index1_mul1_b, index1_mul1_result;
+	qmult index1_mul1(.clk(clk), .a(weights_scale), .b(index1_mul1_b), .q_result(index1_mul1_result));
+	reg [fixed-1:0]	index1_mul2_b, index1_mul2_result;
+	qmult index1_mul2(.clk(clk), .a(weights_scale), .b(index1_mul2_b), .q_result(index1_mul2_result));
 
-	reg	index2_mul_a, index2_mul_b, index2_mul_result;
-	qmult index2_mul(.clk(clk), .a(index2_mul_a), .b(index2_mul_b), .q_result(index2_mul_result));
+	reg	[fixed-1:0] index2_mul1_a, index2_mul1_b, index2_mul1_result;
+	qmult index2_mul1(.clk(clk), .a(index2_mul1_a), .b(index2_mul1_b), .q_result(index2_mul1_result));
+	reg	[fixed-1:0] index2_mul2_a, index2_mul2_b, index2_mul2_result;
+	qmult index2_mul2(.clk(clk), .a(index2_mul2_a), .b(index2_mul2_b), .q_result(index2_mul2_result));
 
-	reg	index3_mul_a, index3_mul_b, index3_mul_result;
-	qmult index3_mul(.clk(clk), .a(index3_mul_a), .b(index3_mul_b), .q_result(index3_mul_result));
+	reg	[fixed-1:0] index3_mul1_a, index3_mul1_b, index3_mul1_result;
+	qmult index3_mul(.clk(clk), .a(index3_mul1_a), .b(index3_mul1_b), .q_result(index3_mul1_result));
+	reg	[fixed-1:0] index3_mul2_a, index3_mul2_b, index3_mul2_result;
+	qmult index3_mu2(.clk(clk), .a(index3_mul2_a), .b(index3_mul2_b), .q_result(index3_mul2_result));
+
+	reg [fixed-1:0] sigmoid_z_in, sigmoid_z_out;
+	sigmoid_lut sigforz1 (.clk(clk), .phase(sigmoid_z_in), .sigmoid(sigmoid_z_out));
+	reg [fixed-1:0] sigmoid_r_in, sigmoid_r_out;
+	sigmoid_lut sigforr1 (.clk(clk), .phase(sigmoid_r_in), .sigmoid(sigmoid_r_out));
 
 	always @(posedge clk) begin
-		if(index1 < N) begin
-			if (index1_ready) begin
-				sum 	= vad_gru_bias[index1*fixed +: fixed];
-				index1_ready = 1'b0;
-			end
+		if(pass_1 == 1'b0) begin 
+			if(index1 < N) begin
+				if (index1_ready) begin
+					sum1 	= vad_gru_bias[index1*fixed   +: fixed];
+					sum2	= vad_gru_bias[index1*fixed+N +: fixed];
+					index1_ready = 1'b0;
+					index2 = 0; 
+					index3 = 0;
+					index2_ready = 1'b0;
+					index3_ready = 1'b0;
+				end
 
-			if(index2 < M) begin
-				index2_mul_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
-				index2_mul_b = dense_out[index2*fixed +: fixed];
-				tmpsum1	= index2_mul_result;
-				sum	= tmpsum1 + sum;
-				index2	= index2 + 1;
-			end
-			else begin
-				index2_ready = 1'b1;
-			end
+				if(index2 < M) begin
+					index2_mul1_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
+					index2_mul1_b = dense_out[index2*fixed +: fixed];
 
-			if(index3 < M) begin
-				index3_mul_a = vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed];
-				index2_mul_b = vad_gru_state[index3*fixed +: fixed];
-				tmpsum2	= index3_mul_result;
-				sum	= tmpsum2 + sum;
-				index3	= index3 + 1;
-			end
-			else begin
-				index3_ready = 1'b1;
-			end
+					index2_mul2_a = vad_gru_input_weights[(N+index2*stride+index1)*fixed +: fixed];
+					index2_mul2_b = dense_out[index2*fixed +: fixed];
 
-			if (index1_ready && index2_ready) begin
-				index1_mul_b = sum;
-				tmpz[index1*fixed +: fixed] = index1_mul_result;
-				index1	= index1 + 1;
+					sum1 = sum1 + index2_mul1_result;
+					sum2 = sum2 + index2_mul2_result;
+
+					index2	= index2 + 1;
+				end
+				else begin
+					index2_ready = 1'b1;
+				end
+
+				if(index3 < M) begin
+					index3_mul1_a = vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed];
+					index3_mul1_b = vad_gru_state[index3*fixed +: fixed];
+
+					index3_mul2_a = vad_gru_recurrent_weights[(N+index3*stride+index1)*fixed +: fixed];
+					index3_mul2_b = vad_gru_state[index3*fixed +: fixed];
+
+					sum1	= sum1 + index3_mul1_result;
+					sum2	= sum2 + index3_mul2_result;
+					index3	= index3 + 1;
+				end
+				else begin
+					index3_ready = 1'b1;
+				end
+
+				if (index1_ready && index2_ready) begin
+					index1_mul1_b = sum1;
+					index1_mul2_b = sum2;
+					sigmoid_r_in = index1_mul1_result;
+					sigmoid_z_in = index1_mul2_result;
+					z[index1*fixed +: fixed] = sigmoid_z_out;
+					r[index1*fixed +: fixed] = sigmoid_r_out;
+					index1	= index1 + 1;
+					index1_ready = 1'b1;
+					index2_ready = 1'b0;
+					index3_ready = 1'b0;
+				end
+			end
+			else begin 
+				pass_1 = 1'b1;
+				index1 = 0; 
+				index2 = 0; 
+				index3 = 0;
 				index1_ready = 1'b1;
 				index2_ready = 1'b0;
 				index3_ready = 1'b0;
+				tmpsum1 = 0; 
+				tmpsum2 = 0;
 			end
 		end
+		else if(pass_1 == 1'b1) begin
+			if(index1 < N) begin
+				if (index1_ready) begin
+					sum3	= vad_gru_bias[index1*fixed + 2*N +: fixed];
+					index1_ready = 1'b0;
+				end
+
+				if(index2 < M) begin
+					index2_mul1_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
+					index2_mul1_b = dense_out[index2*fixed +: fixed];
+
+					sum3 = sum3 + index2_mul1_result;
+
+					index2	= index2 + 1;
+				end
+				else begin
+					index2_ready = 1'b1;
+				end
+
+				if(index3 < M) begin
+					index3_mul1_a = vad_gru_recurrent_weights[(2*N + index3*stride + index1)*fixed +: fixed];
+					index3_mul1_b = vad_gru_state[index3*fixed +: fixed];
+
+					index3_mul2_a = index3_mul1_result;
+					index3_mul2_b = r[index3*fixed +: fixed];
+
+					sum3	= sum3 + index3_mul2_result;
+					index3	= index3 + 1;
+				end
+				else begin
+					index3_ready = 1'b1;
+				end
+
+			end
+
+		end 
 	end
-	
-	always @(posedge clk) begin
-
-		index1 =0; index2 =0; index3 = 0;
-
-		if(index1 < N) begin
-
-			sum <= vad_gru_bias[index1*fixed+N +: fixed];
-
-			if(index2 < M) begin
-				tmpsum1	<= vad_gru_input_weights[(N+index2*stride+index1)*fixed +: fixed] * dense_out[index2*fixed +: fixed];
-				sum	<= tmpsum1 + sum;
-				index2	<= index2 + 1;
-			end
-
-			if(index3 < M) begin
-				tmpsum2	<= vad_gru_recurrent_weights[(N+index3*stride+index1)*fixed +: fixed] * vad_gru_state[index3*fixed +: fixed];
-				sum	<= tmpsum2 + sum;
-				index3	<= index3 + 1;
-			end
-
-			index1 <= index1 + 1;
-
-			tmpr[index1*fixed +: fixed] <= weights_scale * sum;
-		end
-	end
-
-	//sigmoid_lut sigforr1(.clk(clk), .phase(tmpr), .sigmoid(r));
-	generate
-		for (k=0; k<24; k=k+1) begin
-			sigmoid_lut sigforr1[23:0](
-				.clk(clk),
-				.phase(tmpr[(k+1)*fixed-1 : k*fixed]),
-				.sigmoid(r[(k+1)*fixed-1 : k*fixed])
-				);
-		end
-	endgenerate
-	integer gi;
 
 	always @(posedge clk) begin
 		gi =0; index2 =0; index3 = 0;
@@ -183,21 +207,6 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		tmpsum1 = 0; tmpsum2 = 0;
 		
 		if(gi < N) begin
-
-			sum <= vad_gru_bias[2*N+gi*fixed+N +: fixed];
-
-			if(index2 < M) begin
-				tmpsum1	<= vad_gru_input_weights[(2*N+index2*stride+gi)*fixed +: fixed] * dense_out[index2*fixed +: fixed];
-				sum	<= tmpsum1 + sum;
-				index2	<= index2 + 1;
-			end
-
-			if(index3 < M) begin
-				tmpsum2	<= vad_gru_recurrent_weights[(2*N+index3*stride+gi)*fixed +:32] * vad_gru_state[index3*fixed +: fixed]*r[index3*fixed +: fixed];
-				sum	<= tmpsum2 + sum;
-				index3	<= index3 + 1;
-			end
-
 			// tanh tanhforg1(sum, tmptmp);		// 이거 always문 안에서 모듈 선언하면 매 클럭마다 생성되니까 금지됨 듯
 
 			h[gi*fixed +: fixed] = z[gi*fixed +: fixed]*vad_gru_state[gi*fixed +: fixed] + (one -z[gi*fixed +: fixed]) * tmptmp;
