@@ -1,39 +1,42 @@
 module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 
-	parameter   fixed   = 32;
+	parameter	fixed		= 32;
+	parameter	nb_inputs	= 24; 
+	parameter	nb_neurons	= 24; 
 
-	integer	    index1  = 0;
-	integer	    index2  = 0;
-	integer	    index3  = 0;
-	integer	    M       = 24;
-	integer	    N       = 24;
-	integer	    stride  = 72;
-	integer 	one     = 1;
+	integer		index1		= 0;
+	integer		index2		= 0;
+	integer		index3		= 0;
+	integer		M			= nb_inputs;
+	integer		N			= nb_neurons;
+	integer		stride		= 3 * nb_neurons;
+	integer		one			= 1;
+	reg			index1_ready, index2_ready, index3_ready;
 
-	output 	[(   24*fixed)-1 : 0]	vad_gru_state;
-	input 	[(   24*fixed)-1 : 0]	dense_out;
-	input 							clk;
+	output	[(nb_neurons*fixed)-1 : 0]	vad_gru_state;
+	input	[( nb_inputs*fixed)-1 : 0]	dense_out;
+	input								clk;
 	
-	//reg     [(   24*fixed)-1 : 0]	z ,tmpz, r, tmpr, h, tmph, tmptmp;
-	reg     [(   24*fixed)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
-	reg     [        fixed-1 : 0]	weights_scale;
-	reg     [(   24*fixed)-1 : 0]	sum, tmpsum1, tmpsum2;
+	reg		[(   24*fixed)-1 : 0]	tmpz, tmpr, h, tmph, tmptmp;
+	reg		[        fixed-1 : 0]	weights_scale;
+	reg		[(   24*fixed)-1 : 0]	sum, tmpsum1, tmpsum2;
+
 	//to solve register error of z
-	wire [(   90*fixed)-1 : 0]	z = 0 ;
-	wire [(   90*fixed)-1 : 0]	r = 0;
+	wire	[(   90*fixed)-1 : 0]	z = 0 ;
+	wire	[(   90*fixed)-1 : 0]	r = 0;
 
 	
-	reg     [        fixed-1 : 0]   vad_gru_bias_array[71:0];
-	wire    [(   72*fixed)-1 : 0]   vad_gru_bias;
+	reg		[        fixed-1 : 0]   vad_gru_bias_array[71:0];
+	wire	[(   72*fixed)-1 : 0]   vad_gru_bias;
 
-	reg     [        fixed-1 : 0]	vad_gru_input_weights_array[1727:0];
+	reg		[        fixed-1 : 0]	vad_gru_input_weights_array[1727:0];
 	wire	[( 1728*fixed)-1 : 0]	vad_gru_input_weights;
 
-	reg	    [        fixed-1 : 0]	vad_gru_recurrent_weights_array[1727:0];
+	reg		[        fixed-1 : 0]	vad_gru_recurrent_weights_array[1727:0];
 	wire	[( 1728*fixed)-1 : 0]	vad_gru_recurrent_weights;
 
 	initial begin
-		$readmemb("vad_gru_bias_fixed.mem",				vad_gru_bias_array,					0, 71);
+		$readmemb("vad_gru_bias_fixed.mem",					vad_gru_bias_array,					0, 71);
 		$readmemb("vad_gru_input_weights_fixed.mem",		vad_gru_input_weights_array,		0, 1727);
 		$readmemb("vad_gru_recurrent_weights_fixed.mem",	vad_gru_recurrent_weights_array,	0, 1727);
 	end
@@ -57,15 +60,16 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 				assign vad_gru_recurrent_weights[i*fixed+bit]	= vad_gru_recurrent_weights_array[i][bit];	
 			end
 		end
+
+
+
 	endgenerate	
 
 	//compute update gate and reset gate  at once?
 
-
-
 	// for compute output
 	initial	begin 
-		weights_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
+		weights_scale	= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
 		tmpsum1		= 0;
 		tmpsum2		= 0;
 		//z 		= 0;
@@ -73,27 +77,39 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		h 		= 0;
 	end
 
+
 	always @(posedge clk) begin
 		if(index1 < N) begin
-
-			sum 	<= vad_gru_bias[index1*fixed +: fixed];
+			if (index1_ready) begin
+				sum 	= vad_gru_bias[index1*fixed +: fixed];
+				index1_ready = 1'b0;
+			end
 
 			if(index2 < M) begin
-				tmpsum1	<= vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed] * dense_out[index2*fixed +: fixed];
-				sum	<= tmpsum1 + sum;
-				index2	<= index2 + 1;
+				tmpsum1	= vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed] * dense_out[index2*fixed +: fixed];
+				sum	= tmpsum1 + sum;
+				index2	= index2 + 1;
+			end
+			else begin
+				index2_ready = 1'b1;
 			end
 
 			if(index3 < M) begin
-				tmpsum2	<= vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed] * vad_gru_state[index3*fixed +: fixed];
-				sum	<= tmpsum2 + sum;
-				index3	<= index3 + 1;
+				tmpsum2	= vad_gru_recurrent_weights[(index3*stride+index1)*fixed +: fixed] * vad_gru_state[index3*fixed +: fixed];
+				sum	= tmpsum2 + sum;
+				index3	= index3 + 1;
+			end
+			else begin
+				index3_ready = 1'b1;
 			end
 
-			index1	<= index1 + 1;
-
-			tmpz[index1*fixed +: fixed] <= weights_scale * sum;
-
+			if (index1_ready && index2_ready) begin
+				tmpz[index1*fixed +: fixed] = weights_scale * sum;
+				index1	= index1 + 1;
+				index2_ready = 1'b1;
+				index2_ready = 1'b0;
+				index3_ready = 1'b0;
+			end
 		end
 	end
 	generate
@@ -257,7 +273,7 @@ module gru2( noise_gru_state, noise_input, clk );
 
 
 	initial	begin 
-		weights_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
+		weights_scale	= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
 		tmpsum1		= 0;
 		tmpsum2		= 0;
 		//z 		= 0;
@@ -439,7 +455,7 @@ module gru3(denoise_gru_state, denoise_input, clk);
 
 
 	initial	begin 
-		weights_scale	= 32'b0_01110111_00000000000000000000000;  // 1.f/256
+		weights_scale	= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
 		tmpsum1		= 0;
 		tmpsum2		= 0;
 		//z 		= 0;
