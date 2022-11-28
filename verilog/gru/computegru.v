@@ -86,8 +86,12 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 		//r 		= 0;
 		h 		= 0;
 		index1_ready = 1'b1;
+		index2_ready = 1'b0;
+		index3_ready = 1'b0;
 	end
 
+	wire	qmult_a, qmult_b, qmult_result;
+	module qmult (.clk(clk), .a(qmult_a), .b(qmult_b), .q_result(qmult_result));
 
 	always @(posedge clk) begin
 		if(index1 < N) begin
@@ -97,7 +101,9 @@ module gru1 ( vad_gru_state, dense_out, clk );	// 24 -> 24
 			end
 
 			if(index2 < M) begin
-				tmpsum1	= vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed] * dense_out[index2*fixed +: fixed];
+				qmult_a = vad_gru_input_weights[(index2*stride+index1)*fixed +: fixed];
+				qmult_b = dense_out[index2*fixed +: fixed];
+				tmpsum1	= qmult_result;
 				sum	= tmpsum1 + sum;
 				index2	= index2 + 1;
 			end
