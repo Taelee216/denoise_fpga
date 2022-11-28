@@ -81,7 +81,13 @@ module RNN( gains, vad, feature, clk, start, valid );
 
 	always @(posedge clk) begin
 		if (start) begin
+			valid = 1'b0;
 			start_dense1 = 1'b1;
+			start_dense2 = 1'b0;
+			start_dense3 = 1'b0;
+			start_gru1 = 1'b0;
+			start_gru2 = 1'b0;
+			start_gru3 = 1'b0;
 		end
 		if (valid_dense1) begin
 			start_gru1 = 1'b1;

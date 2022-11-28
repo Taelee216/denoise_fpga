@@ -189,7 +189,7 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 					pass1_end = 1'b1;
 				end
 			end
-			if(pass_1 == 1'b1) begin
+			if(pass_1 == 1'b0) begin
 				if(index1 < N) begin
 					if (index1_ready) begin
 						sum3	= vad_gru_bias[index1*fixed + 2*N +: fixed];
