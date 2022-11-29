@@ -1,4 +1,4 @@
-module dense1 ( denseout, in, clk); //42 -> 24
+module dense1_old ( denseout, in, clk); //42 -> 24
 
 	parameter 	fixed = 32;
 
@@ -91,7 +91,7 @@ module dense1 ( denseout, in, clk); //42 -> 24
 
 endmodule
 
-module dense2 ( vad, vad_gru_state, clk); //24 -> 1
+module dense2_old ( vad, vad_gru_state, clk); //24 -> 1
 
 	parameter 	fixed = 32;
 
@@ -174,7 +174,7 @@ module dense2 ( vad, vad_gru_state, clk); //24 -> 1
 
 endmodule
 
-module dense3 ( gains, denoise_gru_state, clk ); 
+module dense3_old ( gains, denoise_gru_state, clk ); 
 
 	parameter 		fixed = 32;
 
