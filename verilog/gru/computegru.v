@@ -27,17 +27,20 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	reg		[           fixed - 1 : 0]	z[N-1:0], r[N-1:0], h[N-1:0];
 	reg		[           fixed - 1 : 0]	weights_scale;
 	reg		[           fixed - 1 : 0]	sum1, sum2, sum3;
-	reg		[           fixed - 1 : 0]	sum1_tmp, sum2_tmp, sum3_tmp;
+	reg		[       2 * fixed - 1 : 0]	sum1_tmp, sum2_tmp, sum3_tmp;
 	reg		[           fixed - 1 : 0]	sum1_init, sum2_init, sum3_init;
 	
 	reg		[           fixed - 1 : 0]	vad_gru_bias_array[71:0];
 	reg		[           fixed - 1 : 0]	vad_gru_input_weights_array[1727:0];
 	reg		[           fixed - 1 : 0]	vad_gru_recurrent_weights_array[1727:0];
-
+	
+	(* ram_style = "block" *)reg [fixed-1:0] mem [(1<<10)-1:0];  
+     
 	initial begin
 		$readmemb("vad_gru_bias_fixed.mem",					vad_gru_bias_array,					0, 71);
 		$readmemb("vad_gru_input_weights_fixed.mem",		vad_gru_input_weights_array,		0, 1727);
 		$readmemb("vad_gru_recurrent_weights_fixed.mem",	vad_gru_recurrent_weights_array,	0, 1727);
+		$readmemb("tanh_fixed.mem", mem);
 	end
 
 	generate 
@@ -83,210 +86,157 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 		sum3_tmp		= 0;
 	end
 
-	reg		[fixed-1:0] index1_mul1_b;
-	wire	[fixed-1:0] index1_mul1_result;
-	qmult index1_mul1(.clk(clk), .a(weights_scale), .b(index1_mul1_b), .q_result(index1_mul1_result));
-	reg 	[fixed-1:0]	index1_mul2_b;
-	wire	[fixed-1:0] index1_mul2_result;
-	qmult index1_mul2(.clk(clk), .a(weights_scale), .b(index1_mul2_b), .q_result(index1_mul2_result));
-	reg		[fixed-1 : 0] index1_mul3_a, index1_mul3_b;
-	wire	[fixed-1 : 0] index1_mul3_result;
-	qmult index1_mul3(.clk(clk), .a(index1_mul3_a), .b(index1_mul3_b), .q_result(index1_mul3_result));
-	reg		[fixed-1 : 0] index1_mul4_a, index1_mul4_b;
-	wire 	[fixed-1 : 0] index1_mul4_result;
-	qmult index1_mul4(.clk(clk), .a(index1_mul4_a), .b(index1_mul4_b), .q_result(index1_mul4_result));
+	reg		[2*fixed-1:0] index1_mul1_a, index1_mul1_b, index1_mul1_c, index1_mul1_result;
+	reg		[fixed-1:0] index1_mul1_in;
+	reg		[2*fixed-1:0] index1_mul2_a, index1_mul2_b, index1_mul2_c, index1_mul2_result;
+	reg		[fixed-1:0] index1_mul2_in;
 
-
-	reg		[fixed-1:0] index2_mul1_a, index2_mul1_b;
-	wire	[fixed-1:0] index2_mul1_result;
-	qmult index2_mul1(.clk(clk), .a(index2_mul1_a), .b(index2_mul1_b), .q_result(index2_mul1_result));
-	reg		[fixed-1:0] index2_mul2_a, index2_mul2_b;
-	wire	[fixed-1:0] index2_mul2_result;
-	qmult index2_mul2(.clk(clk), .a(index2_mul2_a), .b(index2_mul2_b), .q_result(index2_mul2_result));
-
-	reg		[fixed-1:0] index3_mul1_a, index3_mul1_b;
-	wire	[fixed-1:0] index3_mul1_result;
-	qmult index3_mul(.clk(clk), .a(index3_mul1_a), .b(index3_mul1_b), .q_result(index3_mul1_result));
-	reg		[fixed-1:0] index3_mul2_a, index3_mul2_b;
-	wire 	[fixed-1:0] index3_mul2_result;
-	qmult index3_mu2(.clk(clk), .a(index3_mul2_a), .b(index3_mul2_b), .q_result(index3_mul2_result));
-
-	reg		[fixed-1:0] sigmoid_z_in;
-	wire	[fixed-1:0] sigmoid_z_out;
-	sigmoid_lut sigforz1 (.clk(clk), .phase(sigmoid_z_in), .sigmoid(sigmoid_z_out));
-	reg		[fixed-1:0] sigmoid_r_in;
-	wire	[fixed-1:0] sigmoid_r_out;
-	sigmoid_lut sigforr1 (.clk(clk), .phase(sigmoid_r_in), .sigmoid(sigmoid_r_out));
-	reg		[fixed-1:0] tanh_h_in;
-	wire	[fixed-1:0] tanh_h_out;
-	tanh_lut tanhforh1 ( .clk(clk), .phase(tanh_h_in), .tanh(tanh_h_out));
+	reg		[2*fixed-1:0] index1_mul3_result;
+	reg		[2*fixed-1:0] index1_mul4_result;
+	reg		[2*fixed-1:0] index2_mul1_result;
+	reg		[2*fixed-1:0] index2_mul2_result;
+	reg		[2*fixed-1:0] index3_mul1_result;
+	reg		[2*fixed-1:0] index3_mul2_result;
 
 	always @(posedge clk) begin
 		if(start == 1'b1) begin
 			if(pass_1 == 1'b1) begin 
 				if(index1 < N) begin
-					if (index1_ready) begin
-						sum1_init <= vad_gru_bias_array[index1];
-						sum2_init <= vad_gru_bias_array[index1+N];
-						index1_ready <= 1'b0;
-						index2 <= 0; 
-						index3 <= 0;
-						index2_ready <= 1'b0;
-						index3_ready <= 1'b0;
+				    if (index1_ready) begin
+						sum1 = vad_gru_bias_array[index1];
+						sum2 = vad_gru_bias_array[index1+N];
+						index1_ready = 1'b0;
+						index2 = 0; 
+						index3 = 0;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
+						pass1_end = 1'b0;
 					end
-
 					if(index2 < M) begin
-						index2_mul1_a <= vad_gru_input_weights_array[(index2*stride) + index1];
-						index2_mul1_b <= input_vecter_array[index2];
-
-						index2_mul2_a <= vad_gru_input_weights_array[N + (index2*stride) + index1];
-						index2_mul2_b <= input_vecter_array[index2];
-
-						sum1_tmp <= sum1;
-						sum2_tmp <= sum2;
-
-						sum1 <= sum1_tmp + index2_mul1_result;
-						sum2 <= sum2_tmp + index2_mul2_result;
-
-						index2_tmp <= index2;
-						index2	<= index2_tmp + 1;
+						index2_mul1_result = vad_gru_input_weights_array[(index2*stride) + index1] * input_vecter_array[index2];
+						index2_mul2_result = vad_gru_input_weights_array[N + (index2*stride) + index1] * input_vecter_array[index2];
+						sum1 = sum1 + index2_mul1_result[47:16];
+						sum2 = sum2 + index2_mul2_result[47:16];
+						index2	= index2 + 1;
 					end
 					else begin
-						index2_ready <= 1'b1;
+						index2_ready = 1'b1;
 					end
 
 					if(index3 < M) begin
-						index3_mul1_a <= vad_gru_recurrent_weights_array[(index3*stride) + index1];
-						index3_mul1_b <= input_state_array[index3];
-
-						index3_mul2_a <= vad_gru_recurrent_weights_array[N + (index3*stride) + index1];
-						index3_mul2_b <= input_state_array[index3];
-
-						sum1_tmp <= sum1;
-						sum2_tmp <= sum2;
-
-						sum1	<= sum1_tmp + index3_mul1_result;
-						sum2	<= sum2_tmp + index3_mul2_result;
-						index3_tmp <= index3;
-						index3	<= index3_tmp + 1;
+						index3_mul1_result = vad_gru_recurrent_weights_array[(index3*stride) + index1] * input_state_array[index3];
+						index3_mul2_result = vad_gru_recurrent_weights_array[N + (index3*stride) + index1] * input_state_array[index3];
+						sum1	= sum1 + index3_mul1_result[47:16];
+						sum2	= sum2 + index3_mul2_result[47:16];
+						index3	= index3 + 1;
 					end
 					else begin
-						index3_ready <= 1'b1;
+						index3_ready = 1'b1;
 					end
 
 					if (index2_ready && index3_ready) begin
-						index1_mul1_b <= sum1 + sum1_init;
-						index1_mul2_b <= sum2 + sum2_init;
+						index1_mul1_in = {sum1[fixed-1], sum1[fixed-1:1]};
+						index1_mul1_a = (mem[index1_mul1_in[17:8]] * {{24{1'd0}},index1_mul1_in[7:0]});
+						index1_mul1_b = (mem[index1_mul1_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul1_in[7:0]}));
+						index1_mul1_c = (index1_mul1_in[fixed-1]) ? (index1_mul1_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul1_a[47:16]+index1_mul1_b[47:16]) + 1'b1)) :(index1_mul1_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul1_a[47:16]+index1_mul1_b[47:16]));
+						index1_mul1_result = ({index1_mul1_c[fixed-1], index1_mul1_c[fixed-1:1]}) + 32'b00000000_00000000_10000000_00000000;
+						
+						index1_mul2_in = {sum2[fixed-1], sum2[fixed-1:1]};
+						index1_mul2_a = (mem[index1_mul2_in[17:8]] * {{24{1'd0}},index1_mul2_in[7:0]});
+						index1_mul2_b = (mem[index1_mul2_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul2_in[7:0]}));
+						index1_mul2_c = (index1_mul2_in[fixed-1]) ? (index1_mul2_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul2_a[47:16]+index1_mul2_b[47:16]) + 1'b1)) :(index1_mul2_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul2_a[47:16]+index1_mul2_b[47:16]));
+						index1_mul2_result = ({index1_mul2_c[fixed-1], index1_mul2_c[fixed-1:1]}) + 32'b00000000_00000000_10000000_00000000;
 
-						sigmoid_z_in <= index1_mul1_result;
-						sigmoid_r_in <= index1_mul2_result;
-
-						z[index1] <= sigmoid_z_out;
-						r[index1] <= sigmoid_r_out;
-						index1_tmp <= index1;
-						index1	<= index1_tmp + 1;
-						index1_ready <= 1'b1;
-						index2_ready <= 1'b0;
-						index3_ready <= 1'b0;
+						z[index1] = index1_mul1_result;
+						r[index1] = index1_mul2_result;
+						index1	= index1 + 1;
+						index1_ready = 1'b1;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
 					end
-					pass1_end <= 1'b0;
 				end
 				else begin 
-					pass_1 <= 1'b0;
-					index1 <= 0; 
-					index2 <= 0; 
-					index3 <= 0;
-					index1_ready <= 1'b1;
-					index2_ready <= 1'b0;
-					index3_ready <= 1'b0;
-					pass1_end <= 1'b1;
-					sum1 <= 0;
-					sum2 <= 0;
-					sum3 <= 0;
+					pass_1 = 1'b0;
+					index1 = 0; 
+					index2 = 0; 
+					index3 = 0;
+					index1_ready = 1'b1;
+					index2_ready = 1'b0;
+					index3_ready = 1'b0;
+					pass1_end = 1'b1;
+					sum1 = 0;
+					sum2 = 0;
+					sum3 = 0;
 				end
 			end
 			if(pass_1 == 1'b0) begin
 				if(index1 < N) begin
 					if (index1_ready) begin
-						sum3_init	<= vad_gru_bias_array[index1 + 2*N];
-						index1_ready <= 1'b0;
-						index2 <= 0; 
-						index3 <= 0;
-						index2_ready <= 1'b0;
-						index3_ready <= 1'b0;
+						sum3 = vad_gru_bias_array[index1 + 2*N];
+						index1_ready = 1'b0;
+						index2 = 0; 
+						index3 = 0;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
 					end
 
 					if(index2 < M) begin
-						index2_mul1_a <= vad_gru_input_weights_array[(2*N) + (index2*stride) + index1];
-						index2_mul1_b <= input_vecter_array[index2];
-
-						sum3_tmp <= sum3;
-
-						sum3 <= sum3_tmp + index2_mul1_result;
-
-						index2_tmp <= index2;
-						index2	<= index2_tmp + 1;
+						index2_mul1_result = vad_gru_input_weights_array[(2*N) + (index2*stride) + index1] * input_vecter_array[index2];
+						sum3 = sum3 + index2_mul1_result[47:16];
+						index2	= index2 + 1;
 					end
 					else begin
-						index2_ready <= 1'b1;
+						index2_ready = 1'b1;
 					end
 
 					if(index3 < M) begin
-						index3_mul1_a <= vad_gru_recurrent_weights_array[(2*N) + (index3*stride) + index1];
-						index3_mul1_b <= input_state_array[index3];
-
-						index3_mul2_a <= index3_mul1_result;
-						index3_mul2_b <= r[index3];
-
-						sum3_tmp <= sum3;
-
-						sum3	<= sum3_tmp + index3_mul2_result;
-						index3_tmp <= index3;
-						index3<= index3_tmp + 1;
+						index3_mul1_result = vad_gru_recurrent_weights_array[(2*N) + (index3*stride) + index1] * input_state_array[index3];
+						index3_mul2_result = index3_mul1_result[47:16] * r[index3];
+						sum3	= sum3 + index3_mul2_result[47:16];
+						index3= index3 + 1;
 					end
 					else begin
-						index3_ready <= 1'b1;
+						index3_ready = 1'b1;
 					end
 
 					if (index2_ready && index3_ready) begin
-						index1_mul1_b <= sum3 + sum3_init;
-						tanh_h_in <= index1_mul1_result;
-						sum3 <= tanh_h_out;
 
-						index1_mul3_a <= z[index1];
-						index1_mul3_b <= input_state[index1];
-						index1_mul4_a <= one - z[index1];
-						index1_mul4_b <= tanh_h_out;
+						index1_mul1_in = sum3;
+						index1_mul1_a = (mem[index1_mul1_in[17:8]] * {{24{1'd0}},index1_mul1_in[7:0]});
+						index1_mul1_b = (mem[index1_mul1_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul1_in[7:0]}));
+						index1_mul1_result = (index1_mul1_in [fixed-1]) ? (index1_mul1_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul1_a[47:16]+index1_mul1_b[47:16]) + 1'b1)) :(index1_mul1_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul1_a[47:16]+index1_mul1_b[47:16]));
+						sum3 = index1_mul1_result;
 
-						output_state_array[index1] <= index1_mul3_result + index1_mul4_result;
+						index1_mul3_result = z[index1] * input_state[index1];
+						index1_mul4_result = (one - z[index1]) * sum3;
 
-						index1_tmp <= index1;
-						index1	<= index1_tmp + 1;
+						output_state_array[index1] = index1_mul3_result[47:16] + index1_mul4_result[47:16];
 
-						index1_ready <= 1'b1;
-						index2_ready <= 1'b0;
-						index3_ready <= 1'b0;
+						index1	= index1 + 1;
+
+						index1_ready = 1'b1;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
 					end
-					pass2_end <= 1'b0;
+					pass2_end = 1'b0;
 				end
 				else begin 
-					index1 <= 0; 
-					index2 <= 0; 
-					index3 <= 0;
-					index1_ready <= 1'b1;
-					index2_ready <= 1'b0;
-					index3_ready <= 1'b0;
-					pass2_end <= 1'b1;
-					sum1 <= 0;
-					sum2 <= 0;
-					sum3 <= 0;
+					index1 = 0; 
+					index2 = 0; 
+					index3 = 0;
+					index1_ready = 1'b1;
+					index2_ready = 1'b0;
+					index3_ready = 1'b0;
+					pass2_end = 1'b1;
+					sum1 = 0;
+					sum2 = 0;
+					sum3 = 0;
 				end
 			end 
 		end
 		valid = pass1_end & pass2_end;
 	end
 endmodule
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
