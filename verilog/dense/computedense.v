@@ -29,7 +29,7 @@ module dense1 ( denseout, in, clk); //42 -> 24
 	initial begin 
 		// $readmemb("bin_memory_file_fixed.mem", memory_array, [start_address], [end_address]);
 		$readmemb("input_dense_bias_fixed.mem", input_dense_bias_array, 0, 23);
-		$readmemb("input_dense_weights_fixed.mem",		input_dense_weights_array,		0, 41);
+		$readmemb("input_dense_weights_fixed.mem",		input_dense_weights_array,		0, 1007);
 	end
 
 	generate 				// using generate-for to pack bus into array
