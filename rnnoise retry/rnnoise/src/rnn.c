@@ -230,7 +230,7 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 	compute_gru(rnn->model->noise_gru, rnn->noise_gru_state, noise_input);
 	/*
 		static const GRULayer noise_gru = {
-			noise_gru_bias				[144],
+			noise_gru_bias				[114],
 			noise_gru_weights			[12960],
 			noise_gru_recurrent_weights	[6912],
 			int nb_inputs				90, 
