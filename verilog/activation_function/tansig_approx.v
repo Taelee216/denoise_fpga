@@ -70,7 +70,7 @@ module tanh_lut #(
 	//ram_style can be 'block' or 'distributed' based on the utilization and other requirements in the project
     initial 
     begin
-        $readmemb("tanh_data.mem", mem);
+        $readmemb("tanh_fixed.mem", mem);
     end
     
     always@(posedge clk)
