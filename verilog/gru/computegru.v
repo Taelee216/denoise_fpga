@@ -1,4 +1,4 @@
-module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, valid );	// 24 -> 24
+module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, valid, output_end );	// 24 -> 24
 
 	parameter	fixed		= 32;
 	parameter	nb_inputs	= 24; 
@@ -11,19 +11,19 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 	integer		index1_tmp, index2_tmp, index3_tmp;
 	integer		one			= 1;
 	reg			index1_ready, index2_ready, index3_ready;
-	reg			pass_1;
+	reg			pass_1, pass_start;
 	reg			pass1_end, pass2_end;
 
 	input	[(           fixed)-1 : 0]	input_state;
 	input	[(           fixed)-1 : 0]	input_vecter;
 	input								clk, start, input_end;
-	output reg							valid;
-	output	[(nb_neurons*fixed)-1 : 0]	output_state;
+	output reg							valid, output_end;
+	output reg	[(           fixed)-1 : 0]	output_state;
 
 	reg		[           fixed - 1 : 0]	input_state_array[nb_neurons-1:0];
 	reg		[           fixed - 1 : 0]	input_vecter_array[nb_inputs-1:0];
 	reg		[           fixed - 1 : 0]	output_state_array[nb_neurons-1:0];
-	
+	integer		in_1, in_2, out_1;
 	reg		[           fixed - 1 : 0]	z[N-1:0], r[N-1:0];
 	reg		[           fixed - 1 : 0]	weights_scale;
 	reg		[           fixed - 1 : 0]	sum1, sum2, sum3;
@@ -40,16 +40,6 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 		$readmemb("vad_gru_recurrent_weights_fixed.mem",	vad_gru_recurrent_weights_array,	0, 1727);
 		$readmemb("tanh_fixed.mem", mem);
 	end
-
-	generate 
-		genvar i, bit;
-		for ( i = 0; i < nb_neurons; i = i + 1 ) begin	
-			for ( bit = 0; bit < fixed; bit = bit + 1 ) begin	
-				assign output_state[(i*fixed)+bit] = output_state_array[i][bit];
-			end
-		end
-	endgenerate	
-
 	//compute update gate and reset gate  at once?
 
 	// for compute output
@@ -68,6 +58,9 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 		sum1 			= 0;
 		sum2			= 0;
 		sum3 			= 0;
+		in_1 = 0;
+		in_2 = 0;
+		out_1 = 0;
 	end
 
 	reg		[2*fixed-1:0] index1_mul1_a, index1_mul1_b, index1_mul1_c, index1_mul1_result;
@@ -84,16 +77,20 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 
 	always @(posedge clk) begin
 		if(start == 1'b1 && input_end == 1'b0) begin
-			if (index1 < nb_neurons) begin
-				input_state_array[index1] = input_state;
-				index1 = index1 + 1;
+			if (in_1 < nb_neurons) begin
+				input_state_array[in_1] = input_state;
+				in_1 = in_1 + 1;
 			end
-			if (index2 < nb_inputs) begin
-				input_vecter_array[index2] = input_vecter;
-				index2 = index2 + 1;
+			if (in_2 < nb_inputs) begin
+				input_vecter_array[in_2] = input_vecter;
+				in_2 = in_2 + 1;
+			end
+			if ( (in_1 == nb_neurons) && (in_2 == nb_inputs) ) begin
+			    in_1 = 0;
+			    in_2 = 0;
 			end
 		end
-		if(start == 1'b1) begin
+		if(start == 1'b1 && input_end == 1'b1) begin
 			if(pass_1 == 1'b1) begin 
 				if(index1 < N) begin
 				    if (index1_ready) begin
@@ -172,6 +169,7 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 						index3 = 0;
 						index2_ready = 1'b0;
 						index3_ready = 1'b0;
+						pass2_end = 1'b0;
 					end
 
 					if(index2 < M) begin
@@ -211,8 +209,9 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 						index1_ready = 1'b1;
 						index2_ready = 1'b0;
 						index3_ready = 1'b0;
+						
 					end
-					pass2_end = 1'b0;
+					
 				end
 				else begin 
 					index1 = 0; 
@@ -222,15 +221,29 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 					index2_ready = 1'b0;
 					index3_ready = 1'b0;
 					pass2_end = 1'b1;
+					valid = 1'b1;
 					sum1 = 0;
 					sum2 = 0;
 					sum3 = 0;
 				end
 			end 
+			
 		end
-		valid = pass1_end & pass2_end;
+		
+		if (valid) begin
+		    if (out_1 < nb_neurons) begin
+                output_state = output_state_array[out_1];
+                out_1 = out_1 + 1;
+            end
+            if (out_1 == nb_neurons) begin
+                output_end = 1'b1;
+                valid = 1'b0;
+            end
+        end
+		    
 	end
 endmodule
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
