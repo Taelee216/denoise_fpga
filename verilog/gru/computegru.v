@@ -1,4 +1,4 @@
-module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 24 -> 24
+module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, valid );	// 24 -> 24
 
 	parameter	fixed		= 32;
 	parameter	nb_inputs	= 24; 
@@ -14,21 +14,19 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	reg			pass_1;
 	reg			pass1_end, pass2_end;
 
-	input	[(nb_neurons*fixed)-1 : 0]	input_state;
-	input	[( nb_inputs*fixed)-1 : 0]	input_vecter;
-	input								clk, start;
+	input	[(           fixed)-1 : 0]	input_state;
+	input	[(           fixed)-1 : 0]	input_vecter;
+	input								clk, start, input_end;
 	output reg							valid;
 	output	[(nb_neurons*fixed)-1 : 0]	output_state;
 
-	wire	[           fixed - 1 : 0]	input_state_array[nb_neurons-1:0];
-	wire	[           fixed - 1 : 0]	input_vecter_array[nb_inputs-1:0];
+	reg		[           fixed - 1 : 0]	input_state_array[nb_neurons-1:0];
+	reg		[           fixed - 1 : 0]	input_vecter_array[nb_inputs-1:0];
 	reg		[           fixed - 1 : 0]	output_state_array[nb_neurons-1:0];
 	
-	reg		[           fixed - 1 : 0]	z[N-1:0], r[N-1:0], h[N-1:0];
+	reg		[           fixed - 1 : 0]	z[N-1:0], r[N-1:0];
 	reg		[           fixed - 1 : 0]	weights_scale;
 	reg		[           fixed - 1 : 0]	sum1, sum2, sum3;
-	reg		[       2 * fixed - 1 : 0]	sum1_tmp, sum2_tmp, sum3_tmp;
-	reg		[           fixed - 1 : 0]	sum1_init, sum2_init, sum3_init;
 	
 	reg		[           fixed - 1 : 0]	vad_gru_bias_array[71:0];
 	reg		[           fixed - 1 : 0]	vad_gru_input_weights_array[1727:0];
@@ -47,17 +45,9 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 		genvar i, bit;
 		for ( i = 0; i < nb_neurons; i = i + 1 ) begin	
 			for ( bit = 0; bit < fixed; bit = bit + 1 ) begin	
-				assign input_state_array[i][bit] = input_state[(i*fixed)+bit];
 				assign output_state[(i*fixed)+bit] = output_state_array[i][bit];
 			end
 		end
-
-		for ( i = 0 ; i < nb_inputs ; i = i + 1 ) begin	
-			for ( bit = 0 ; bit < fixed ; bit = bit + 1 ) begin	
-				assign input_vecter_array[i][bit] = input_vecter[(i*fixed)+bit];
-			end
-		end
-
 	endgenerate	
 
 	//compute update gate and reset gate  at once?
@@ -78,12 +68,6 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 		sum1 			= 0;
 		sum2			= 0;
 		sum3 			= 0;
-		sum1_init		= 0;
-		sum2_init		= 0;
-		sum3_init		= 0;
-		sum1_tmp		= 0;
-		sum2_tmp		= 0;
-		sum3_tmp		= 0;
 	end
 
 	reg		[2*fixed-1:0] index1_mul1_a, index1_mul1_b, index1_mul1_c, index1_mul1_result;
@@ -99,6 +83,16 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, valid );	// 2
 	reg		[2*fixed-1:0] index3_mul2_result;
 
 	always @(posedge clk) begin
+		if(start == 1'b1 && input_end == 1'b0) begin
+			if (index1 < nb_neurons) begin
+				input_state_array[index1] = input_state;
+				index1 = index1 + 1;
+			end
+			if (index2 < nb_inputs) begin
+				input_vecter_array[index2] = input_vecter;
+				index2 = index2 + 1;
+			end
+		end
 		if(start == 1'b1) begin
 			if(pass_1 == 1'b1) begin 
 				if(index1 < N) begin
