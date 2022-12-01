@@ -312,10 +312,11 @@ module RNN(clk, rst);
 							mul4_i = {mul2_o[fixed-1], mul2_o[fixed-1:1]};
 							mul4_a = (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
 							mul4_b = (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
-							mul4_t = (mul4_i[fixed-1]) ? (mul4_i[fixed-14] ? (MINUS_ONE) : (~(mul3_a[47:16]+mul3_b[47:16]) + 1'b1)) : (mul3_i[fixed-14] ? (ONE):(mul3_a[47:16]+mul3_b[47:16]));
-							mul4_o = ({mul3_t[fixed-1],mul3_t[fixed-1:1]}) + HALF;
+							mul4_c			= mul4_a + mul4_b;
+							mul4_t = (mul4_i[fixed-1]) ? (mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : (mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
+							mul4_o = ({mul4_t[fixed-1],mul4_t[fixed-1:1]}) + HALF;
 
-							r[index1] = mul3_o;
+							r[index1] = mul4_o;
 
 							index1	= index1 + 1;
 							index1_ready = 1'b1;
