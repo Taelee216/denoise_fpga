@@ -7,23 +7,23 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 	parameter	M			= nb_inputs;
 	parameter	stride		= 3 * nb_neurons;
 
-	integer		index1, index2, index3;
-	integer		index1_tmp, index2_tmp, index3_tmp;
-	integer		one			= 1;
-	reg			index1_ready, index2_ready, index3_ready;
-	reg			pass_1, pass_start;
-	reg			pass1_end, pass2_end;
-
 	input	[(           fixed)-1 : 0]	input_state;
 	input	[(           fixed)-1 : 0]	input_vecter;
 	input								clk, start, input_end;
 	output reg							valid, output_end;
-	output reg	[(           fixed)-1 : 0]	output_state;
+	output reg	[(       fixed)-1 : 0]	output_state;
+
+	integer		one			= 1;
+	integer		in_1,			in_2,			out_1;
+	integer		index1,			index2,			index3;
+	reg			index1_ready,	index2_ready,	index3_ready;
+	reg			pass_1,			pass_start;
+	reg			pass1_end,		pass2_end;
 
 	reg		[           fixed - 1 : 0]	input_state_array[nb_neurons-1:0];
 	reg		[           fixed - 1 : 0]	input_vecter_array[nb_inputs-1:0];
 	reg		[           fixed - 1 : 0]	output_state_array[nb_neurons-1:0];
-	integer		in_1, in_2, out_1;
+
 	reg		[           fixed - 1 : 0]	z[N-1:0], r[N-1:0];
 	reg		[           fixed - 1 : 0]	weights_scale;
 	reg		[           fixed - 1 : 0]	sum1, sum2, sum3;
@@ -64,9 +64,9 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 	end
 
 	reg		[2*fixed-1:0] index1_mul1_a, index1_mul1_b, index1_mul1_c, index1_mul1_result;
-	reg		[fixed-1:0] index1_mul1_in;
+	reg		[  fixed-1:0] index1_mul1_in;
 	reg		[2*fixed-1:0] index1_mul2_a, index1_mul2_b, index1_mul2_c, index1_mul2_result;
-	reg		[fixed-1:0] index1_mul2_in;
+	reg		[  fixed-1:0] index1_mul2_in;
 
 	reg		[2*fixed-1:0] index1_mul3_result;
 	reg		[2*fixed-1:0] index1_mul4_result;

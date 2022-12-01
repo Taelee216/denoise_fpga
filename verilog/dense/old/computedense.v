@@ -1,16 +1,19 @@
-module dense1_old ( denseout, in, clk); //42 -> 24
+module dense1_old ( denseout, in, clk, start, input_end, valid, output_end); //42 -> 24
 
 	parameter 	fixed = 32;
 
 	integer		nb_input;
 	integer		nb_neurons;
+	integer		N;
+	integer		M;
 	integer		stride;
-	integer		index1=0;
-	integer		index2=0;
+	integer		index1, index2;
 
-	input 							clk;
-	input	[(   42*fixed)-1 : 0]	in;
-	output	[(   24*fixed)-1 : 0]	denseout;
+
+	input 							clk,	start,		input_end;
+	input	[        fixed-1 : 0]	in;
+	output reg	[    fixed-1 : 0]	denseout;
+	output reg						valid, output_end;
 	
 
 	reg		[        fixed-1 : 0] 	sum;
@@ -51,9 +54,11 @@ module dense1_old ( denseout, in, clk); //42 -> 24
 	initial begin
 		weight_scale= 32'b0_01110111_00000000000000000000000;  // 1.f/256
 		sum			= 32'b0;
-		nb_input	= 42;
+		nb_input 	= 42;
 		nb_neurons	= 24;
-		stride		= 24;
+		N			= nb_input;
+		M			= nb_neurons;
+		stride		= N;
 		index1		= 0;
 		index2		= 0;
 	end
