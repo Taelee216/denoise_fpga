@@ -337,6 +337,62 @@ module RNN(clk, rst);
 				end
 				if(pass1 == 1'b0) begin
 					if(index1 < N) begin
+						if (index1_ready) begin
+							sum3 = vad_gru_bias[index1 + 2*N];
+							index1_ready = 1'b0;
+							index2 = 0; 
+							index3 = 0;
+							index2_ready = 1'b0;
+							index3_ready = 1'b0;
+							pass2_end = 1'b0;
+						end
+
+						if(index2 < M) begin
+							mul1_a			= vad_gru_input_weights[(index2*stride) + index1 + (2*N)] * dense_out[index2];
+							mul1_o			= mul1_a[47:16];
+							sum3			= sum3 + mul1_o;
+
+							index2	= index2 + 1;
+						end
+						else begin
+							index2_ready = 1'b1;
+						end
+
+						if(index3 < M) begin
+							mul3_a = vad_gru_input_weights[(index2*stride) + index1 + (2*N)] * dense_out[index2];
+							mul3_t = mul3_a[47:16];
+							mul3_b = mul3_t * r[index3];
+							mul3_o = mul3_b[47:16];
+							sum3	= sum3 + mul3_o;
+
+							index3= index3 + 1;
+						end
+						else begin
+							index3_ready = 1'b1;
+						end
+
+						if (index2_ready && index3_ready) begin
+							mul1_a = WEIGHTS_SCALE * sum1;
+							mul1_o = mul1_a[47:16];
+
+							index1_mul1_in = { sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], {sum3[fixed-1:8]} };
+							index1_mul1_a = (mem[index1_mul1_in[17:8]] * {{24{1'd0}},index1_mul1_in[7:0]});
+							index1_mul1_b = (mem[index1_mul1_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul1_in[7:0]}));
+							index1_mul1_result = (index1_mul1_in [fixed-1]) ? (index1_mul1_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul1_a[47:16]+index1_mul1_b[47:16]) + 1'b1)) :(index1_mul1_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul1_a[47:16]+index1_mul1_b[47:16]));
+							sum3 = index1_mul1_result;
+
+							index1_mul3_result = z[index1] * input_state[index1];
+							index1_mul4_result = (one - z[index1]) * sum3;
+
+							output_state_array[index1] = index1_mul3_result[47:16] + index1_mul4_result[47:16];
+
+							index1	= index1 + 1;
+
+							index1_ready = 1'b1;
+							index2_ready = 1'b0;
+							index3_ready = 1'b0;
+							
+						end
 					end
 				end
 			end
