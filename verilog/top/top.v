@@ -48,40 +48,40 @@ module RNN(clk, rst, gains_out);
 
 
 	/*************   reg   *************/
-	reg		[	fixed-1 : 0]	tanh_mem [(1<<10)-1:0];  
+	reg signed		[	fixed-1 : 0]	tanh_mem [(1<<10)-1:0];  
 
-	reg		[	fixed-1 : 0]	feature				[feature_size-1:0];
-	reg		[	fixed-1 : 0]	gains				[gains_size-1:0];
-	reg		[	fixed-1 : 0]	vad;
+	reg signed		[	fixed-1 : 0]	feature				[feature_size-1:0];
+	reg signed		[	fixed-1 : 0]	gains				[gains_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad;
 
-	reg		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];
-	reg		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
-	reg		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
-	reg		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
-	reg		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
-	reg		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];
+	reg signed		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
 
-	reg		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
-	reg		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
-	reg		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
 	
-	reg		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
-	reg		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
-	reg		[	fixed-1 : 0]	noise_gru_recurrent_weights		[noise_gru_recurrent_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
+	reg signed		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	noise_gru_recurrent_weights		[noise_gru_recurrent_weights_size-1:0];
 	
-	reg		[	fixed-1 : 0]	denoise_gru_bias				[denoise_gru_bias_size-1:0];
-	reg		[	fixed-1 : 0]	denoise_gru_input_weights		[denoise_gru_input_weights_size-1:0];
-	reg		[	fixed-1 : 0]	denoise_gru_recurrent_weights	[denoise_gru_recurrent_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_gru_bias				[denoise_gru_bias_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_gru_input_weights		[denoise_gru_input_weights_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_gru_recurrent_weights	[denoise_gru_recurrent_weights_size-1:0];
 
-	reg		[	fixed-1 : 0]	vad_gru_state		[vad_gru_size-1:0];
-	reg		[	fixed-1 : 0]	noise_gru_state		[noise_gru_size-1:0];
-	reg		[	fixed-1 : 0]	denoise_gru_state	[denoise_gru_size-1:0];
+	reg signed		[	fixed-1 : 0]	vad_gru_state		[vad_gru_size-1:0];
+	reg signed		[	fixed-1 : 0]	noise_gru_state		[noise_gru_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_gru_state	[denoise_gru_size-1:0];
 
-	reg		[	fixed-1 : 0]	dense_out			[dense_out_size-1:0];
-	reg		[	fixed-1 : 0]	noise_input			[noise_input_size-1:0];
-	reg		[	fixed-1 : 0]	denoise_input		[denoise_input_size-1:0];
+	reg signed		[	fixed-1 : 0]	dense_out			[dense_out_size-1:0];
+	reg signed		[	fixed-1 : 0]	noise_input			[noise_input_size-1:0];
+	reg signed		[	fixed-1 : 0]	denoise_input		[denoise_input_size-1:0];
 	
-	reg [fixed-1 : 0] gains_read [gains_size-1:0];
+	reg signed [fixed-1 : 0] gains_read [gains_size-1:0];
 
 	// mem read
 	initial begin
@@ -130,22 +130,22 @@ module RNN(clk, rst, gains_out);
 	integer		nb_inputs,		nb_neurons;
 	integer		M,				N,				stride;
 	integer		index1,			index2,			index3;
-	reg			index1_ready,	index2_ready,	index3_ready;
-	reg			pass1,			pass_start;
-	reg			pass1_end,		pass2_end;
+	reg signed			index1_ready,	index2_ready,	index3_ready;
+	reg signed			pass1,			pass_start;
+	reg signed			pass1_end,		pass2_end;
 
-	reg		[	fixed-1 : 0]	z[MAX_NEURONS-1:0], r[MAX_NEURONS-1:0], h[MAX_NEURONS-1:0];
-	reg		[	fixed-1 : 0]	sum1, sum2, sum3;
+	reg signed		[	fixed-1 : 0]	z[MAX_NEURONS-1:0], r[MAX_NEURONS-1:0], h[MAX_NEURONS-1:0];
+	reg signed		[	fixed-1 : 0]	sum1, sum2, sum3;
 
-	reg		[ 2*fixed-1 : 0]	mul1_a=0, mul1_b=0;
-	reg		[ 2*fixed-1 : 0]	mul2_a=0, mul2_b=0;
-	reg		[ 2*fixed-1 : 0]	mul3_a=0, mul3_b=0, mul3_c=0;
-	reg		[ 2*fixed-1 : 0]	mul4_a=0, mul4_b=0, mul4_c=0;
-	reg		[	fixed-1 : 0]	mul3_i=0, mul3_t=0, mul4_i=0, mul4_t=0;
-	reg		[	fixed-1 : 0]	mul1_o=0, mul2_o=0, mul3_o=0, mul4_o=0;
+	reg signed		[ 2*fixed-1 : 0]	mul1_a=0, mul1_b=0;
+	reg signed		[ 2*fixed-1 : 0]	mul2_a=0, mul2_b=0;
+	reg signed		[ 2*fixed-1 : 0]	mul3_a=0, mul3_b=0, mul3_c=0;
+	reg signed		[ 2*fixed-1 : 0]	mul4_a=0, mul4_b=0, mul4_c=0;
+	reg signed		[	fixed-1 : 0]	mul3_i=0, mul3_t=0, mul4_i=0, mul4_t=0;
+	reg signed		[	fixed-1 : 0]	mul1_o=0, mul2_o=0, mul3_o=0, mul4_o=0;
 
 	integer		layer;
-	reg			layer_init;
+	reg signed			layer_init;
 
 	/*
 		dense1 
@@ -173,8 +173,8 @@ module RNN(clk, rst, gains_out);
 			output size : gains_size = 22
 	*/
 
-    reg flag = 1'b0;
-    reg [15:0] w;
+	reg signed flag = 1'b0;
+	reg signed [15:0] w;
 
 	always @ (posedge clk) begin
 		if(rst == 1'b1) begin
@@ -183,36 +183,36 @@ module RNN(clk, rst, gains_out);
 		end
 		
 		if ((mul1_a[63:48] != 16'b00000000_00000000) && (mul1_a[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul1_a[63:48];
+		flag = 1'b1;
+		w = mul1_a[63:48];
 		end
 		if ((mul2_a[63:48] != 16'b00000000_00000000) && (mul2_a[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul2_a[63:48];
+		flag = 1'b1;
+		w = mul2_a[63:48];
 		end
 		if ((mul3_a[63:48] != 16'b00000000_00000000) && (mul3_a[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul3_a[63:48];
+		flag = 1'b1;
+		w = mul3_a[63:48];
 		end
 		if ((mul3_b[63:48] != 16'b00000000_00000000) && (mul3_b[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul3_b[63:48];
+		flag = 1'b1;
+		w = mul3_b[63:48];
 		end
 		if ((mul3_c[63:48] != 16'b00000000_00000000) && (mul3_c[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul3_c[63:48];
+		flag = 1'b1;
+		w = mul3_c[63:48];
 		end
 		if ((mul4_a[63:48] != 16'b00000000_00000000) && (mul4_a[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul4_a[63:48];
+		flag = 1'b1;
+		w = mul4_a[63:48];
 		end
 		if ((mul4_b[63:48] != 16'b00000000_00000000) && (mul4_b[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul4_b[63:48];
+		flag = 1'b1;
+		w = mul4_b[63:48];
 		end
 		if ((mul4_c[63:48] != 16'b00000000_00000000) && (mul4_c[63:48] != 16'b11111111_11111111)) begin
-		  flag = 1'b1;
-		  w = mul4_c[63:48];
+		flag = 1'b1;
+		w = mul4_c[63:48];
 		end
 		
 		
@@ -367,24 +367,24 @@ module RNN(clk, rst, gains_out);
 								mul1_a			= WEIGHTS_SCALE * sum1;
 								mul1_o			= mul1_a[47:16];
 
-								mul3_i			= {mul1_o[fixed-1], mul1_o[fixed-1:1]};
+								mul3_i			= mul1_o >>> 1;
 								mul3_a			= (tanh_mem[mul3_i[17:8]] * {{24{1'd0}},mul3_i[7:0]});
 								mul3_b			= (tanh_mem[mul3_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul3_i[7:0]}));
 								mul3_c			= mul3_a + mul3_b;
 								mul3_t			= (mul3_i[fixed-1]) ? (mul3_i[fixed-14] ? (MINUS_ONE) : (~mul3_c[47:16] + 1'b1)) : (mul3_i[fixed-14] ? (ONE):(mul3_c[47:16]));
-								mul3_o			= ({mul3_t[fixed-1],mul3_t[fixed-1:1]}) + HALF;
+								mul3_o			= (mul3_t >>> 1) + HALF;
 
 								z[index1]		= mul3_o;
 
 								mul2_a			= WEIGHTS_SCALE * sum2;
 								mul2_o			= mul2_a[47:16];
 
-								mul4_i			= {mul2_o[fixed-1], mul2_o[fixed-1:1]};
+								mul4_i			= mul2_o >>> 1;
 								mul4_a			= (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
 								mul4_b			= (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
 								mul4_c			= mul4_a + mul4_b;
 								mul4_t			= (mul4_i[fixed-1]) ? (mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : (mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
-								mul4_o			= ({mul4_t[fixed-1],mul4_t[fixed-1:1]}) + HALF;
+								mul4_o			= (mul4_t >>> 1) + HALF;
 
 								r[index1]		= mul4_o;
 
@@ -441,14 +441,14 @@ module RNN(clk, rst, gains_out);
 
 							if (index2_ready && index3_ready) begin
 								mul2_a			= WEIGHTS_SCALE * sum1;
-								mul2_o			= (mul1_a[47] == 0)? mul1_a[47:16] : 32'b0;  
+								mul2_o			= (mul2_a[47] == 0)? mul2_a[47:16] : 32'b0;  
 
 								mul4_a			= z[index1] * vad_gru_state[index1];
 								mul4_b			= (ONE - z[index1]) * mul2_o;
 
 								h[index1]		= mul4_a[47:16] + mul4_b[47:16];
 
-								index1			= index1 + 1;
+								index1			= index1 + 1; 
 
 								index1_ready	= 1'b1;
 								index2_ready	= 1'b0;
@@ -526,13 +526,13 @@ module RNN(clk, rst, gains_out);
 							mul3_a			= WEIGHTS_SCALE * sum1;
 							mul3_o			= mul3_a[47:16];
 
-							mul4_i			= mul3_o;
+							mul4_i			= mul3_o >>> 1;
 							mul4_a			= (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
 							mul4_b			= (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
 							mul4_c			= mul4_a + mul4_b;
-							mul4_o			= (mul4_i[fixed-1]) ? /*-1*/(mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : /*+1*/(mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
-
-							vad = mul4_o;
+							mul4_t			= (mul4_i[fixed-1]) ? /*-1*/(mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : /*+1*/(mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
+							mul4_o			= (mul4_t >>> 1) + HALF;
+							vad				= mul4_o;
 
 							index1			= index1 + 1;
 							index1_ready	= 1'b1;
@@ -647,24 +647,24 @@ module RNN(clk, rst, gains_out);
 								mul1_a			= WEIGHTS_SCALE * sum1;
 								mul1_o			= mul1_a[47:16];
 
-								mul3_i			= {mul1_o[fixed-1], mul1_o[fixed-1:1]};
+								mul3_i			= (mul1_o >>> 1);
 								mul3_a			= (tanh_mem[mul3_i[17:8]] * {{24{1'd0}},mul3_i[7:0]});
 								mul3_b			= (tanh_mem[mul3_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul3_i[7:0]}));
 								mul3_c			= mul3_a + mul3_b;
 								mul3_t			= (mul3_i[fixed-1]) ? (mul3_i[fixed-14] ? (MINUS_ONE) : (~mul3_c[47:16] + 1'b1)) : (mul3_i[fixed-14] ? (ONE):(mul3_c[47:16]));
-								mul3_o			= ({mul3_t[fixed-1],mul3_t[fixed-1:1]}) + HALF;
+								mul3_o			= (mul3_t >>> 1) + HALF;
 
 								z[index1]		= mul3_o;
 
 								mul2_a			= WEIGHTS_SCALE * sum2;
 								mul2_o			= mul2_a[47:16];
 
-								mul4_i			= {mul2_o[fixed-1], mul2_o[fixed-1:1]};
+								mul4_i			= (mul2_o >>> 1);
 								mul4_a			= (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
 								mul4_b			= (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
 								mul4_c			= mul4_a + mul4_b;
 								mul4_t			= (mul4_i[fixed-1]) ? (mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : (mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
-								mul4_o			= ({mul4_t[fixed-1],mul4_t[fixed-1:1]}) + HALF;
+								mul4_o			= (mul4_t >>> 1) + HALF;
 
 								r[index1]		= mul4_o;
 
@@ -721,7 +721,7 @@ module RNN(clk, rst, gains_out);
 
 							if (index2_ready && index3_ready) begin
 								mul2_a			= WEIGHTS_SCALE * sum1;
-								mul2_o			= (mul1_a[47] == 0)? mul1_a[47:16] : 32'b0;  
+								mul2_o			= (mul2_a[47] == 0)? mul2_a[47:16] : 32'b0;  
 
 								mul4_a			= z[index1] * noise_gru_state[index1];
 								mul4_b			= (ONE - z[index1]) * mul2_o;
@@ -854,24 +854,24 @@ module RNN(clk, rst, gains_out);
 								mul1_a			= WEIGHTS_SCALE * sum1;
 								mul1_o			= mul1_a[47:16];
 
-								mul3_i			= {mul1_o[fixed-1], mul1_o[fixed-1:1]};
+								mul3_i			= (mul1_o >>> 1);
 								mul3_a			= (tanh_mem[mul3_i[17:8]] * {{24{1'd0}},mul3_i[7:0]});
 								mul3_b			= (tanh_mem[mul3_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul3_i[7:0]}));
 								mul3_c			= mul3_a + mul3_b;
 								mul3_t			= (mul3_i[fixed-1]) ? (mul3_i[fixed-14] ? (MINUS_ONE) : (~mul3_c[47:16] + 1'b1)) : (mul3_i[fixed-14] ? (ONE):(mul3_c[47:16]));
-								mul3_o			= ({mul3_t[fixed-1],mul3_t[fixed-1:1]}) + HALF;
+								mul3_o			= (mul3_t >>> 1) + HALF;
 
 								z[index1]		= mul3_o;
 
 								mul2_a			= WEIGHTS_SCALE * sum2;
 								mul2_o			= mul2_a[47:16];
 
-								mul4_i			= {mul2_o[fixed-1], mul2_o[fixed-1:1]};
+								mul4_i			= (mul2_o >>> 1);
 								mul4_a			= (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
 								mul4_b			= (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
 								mul4_c			= mul4_a + mul4_b;
 								mul4_t			= (mul4_i[fixed-1]) ? (mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : (mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
-								mul4_o			= ({mul4_t[fixed-1],mul4_t[fixed-1:1]}) + HALF;
+								mul4_o			= (mul4_t >>> 1) + HALF;
 
 								r[index1]		= mul4_o;
 
@@ -928,7 +928,7 @@ module RNN(clk, rst, gains_out);
 
 							if (index2_ready && index3_ready) begin
 								mul2_a			= WEIGHTS_SCALE * sum1;
-								mul2_o			= (mul1_a[47] == 0)? mul1_a[47:16] : 32'b0;  
+								mul2_o			= (mul2_a[47] == 0)? mul2_a[47:16] : 32'b0;  
 
 								mul4_a			= z[index1] * denoise_gru_state[index1];
 								mul4_b			= (ONE - z[index1]) * mul2_o;
@@ -1010,11 +1010,12 @@ module RNN(clk, rst, gains_out);
 							mul3_a			= WEIGHTS_SCALE * sum1;
 							mul3_o			= mul3_a[47:16];
 
-							mul4_i			= mul3_o;
+							mul4_i			= mul3_o >>> 1;
 							mul4_a			= (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
 							mul4_b			= (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
 							mul4_c			= mul4_a + mul4_b;
-							mul4_o			= (mul4_i[fixed-1]) ? /*-1*/(mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : /*+1*/(mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
+							mul4_t			= (mul4_i[fixed-1]) ? /*-1*/(mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : /*+1*/(mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
+							mul4_o			= (mul4_t >>> 1) + HALF;
 
 							gains[index1]	= mul4_o;
 
