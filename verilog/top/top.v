@@ -323,6 +323,14 @@ module RNN(clk, rst);
 						end
 					end
 					else begin	// index == N
+						pass1 = 1'b0;
+						index1 = 0; 
+						index2 = 0; 
+						index3 = 0;
+						index1_ready = 1'b1;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
+						pass1_end = 1'b1;
 						layer_init = 1'b1;
 						layer = 1;
 					end
