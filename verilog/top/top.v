@@ -220,6 +220,7 @@ module RNN(clk, rst);
 				else begin	// index == N
 					layer_init	= 1'b1;
 					layer		= 1;
+					pass_start	= 1'b0;
 				end
 			end
 		end
@@ -247,8 +248,9 @@ module RNN(clk, rst);
 				pass2_end		= 1'b0;
 
 				layer_init		= 1'b0;
+				pass_start		= 1'b1;
 			end
-			else begin
+			else if (pass_start == 1'b1) begin
 				if(pass1 == 1'b1) begin 
 					if(index1 < N) begin
 						if (index1_ready) begin
@@ -385,9 +387,23 @@ module RNN(clk, rst);
 							index1_ready = 1'b1;
 							index2_ready = 1'b0;
 							index3_ready = 1'b0;
+							index2 = 0;
+							index2 = 0;
+							pass_start		= 1'b0;
 						end
 					end
 				end
+			else begin
+				if(index3 < N) begin
+					vad_gru_state[index3] = h[index3];
+					index3 = index3 + 1;
+				end
+				else begin
+					layer_init	= 1'b1;
+					layer		= 1;
+					pass_start	= 1'b0;
+				end
+			end
 			end
 		end
 
