@@ -63,10 +63,10 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 		out_1 = 0;
 	end
 
-	reg		[2*fixed-1:0] index1_mul1_a, index1_mul1_b, index1_mul1_c, index1_mul1_result;
-	reg		[  fixed-1:0] index1_mul1_in;
-	reg		[2*fixed-1:0] index1_mul2_a, index1_mul2_b, index1_mul2_c, index1_mul2_result;
-	reg		[  fixed-1:0] index1_mul2_in;
+	reg		[2*fixed-1:0] index1_mul1_a, index1_mul1_b, index1_mul1_c;
+	reg		[  fixed-1:0] index1_mul1_in, index1_mul1_result;
+	reg		[2*fixed-1:0] index1_mul2_a, index1_mul2_b, index1_mul2_c;
+	reg		[  fixed-1:0] index1_mul2_in, index1_mul2_result;
 
 	reg		[2*fixed-1:0] index1_mul3_result;
 	reg		[2*fixed-1:0] index1_mul4_result;
@@ -126,12 +126,14 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 					end
 
 					if (index2_ready && index3_ready) begin
+						sum1 = { sum1[fixed-1], sum1[fixed-1], sum1[fixed-1], sum1[fixed-1], sum1[fixed-1], sum1[fixed-1], sum1[fixed-1], sum1[fixed-1], {sum1[fixed-1:8]} };
 						index1_mul1_in = {sum1[fixed-1], sum1[fixed-1:1]};
 						index1_mul1_a = (mem[index1_mul1_in[17:8]] * {{24{1'd0}},index1_mul1_in[7:0]});
 						index1_mul1_b = (mem[index1_mul1_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul1_in[7:0]}));
 						index1_mul1_c = (index1_mul1_in[fixed-1]) ? (index1_mul1_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul1_a[47:16]+index1_mul1_b[47:16]) + 1'b1)) :(index1_mul1_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul1_a[47:16]+index1_mul1_b[47:16]));
 						index1_mul1_result = ({index1_mul1_c[fixed-1], index1_mul1_c[fixed-1:1]}) + 32'b00000000_00000000_10000000_00000000;
 						
+						sum2 = { sum2[fixed-1], sum2[fixed-1], sum2[fixed-1], sum2[fixed-1], sum2[fixed-1], sum2[fixed-1], sum2[fixed-1], sum2[fixed-1], {sum2[fixed-1:8]} };
 						index1_mul2_in = {sum2[fixed-1], sum2[fixed-1:1]};
 						index1_mul2_a = (mem[index1_mul2_in[17:8]] * {{24{1'd0}},index1_mul2_in[7:0]});
 						index1_mul2_b = (mem[index1_mul2_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul2_in[7:0]}));
@@ -193,7 +195,7 @@ module gru1 ( input_state, input_vecter, output_state, clk, start, input_end, va
 
 					if (index2_ready && index3_ready) begin
 
-						index1_mul1_in = sum3;
+						index1_mul1_in = { sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], {sum3[fixed-1:8]} };
 						index1_mul1_a = (mem[index1_mul1_in[17:8]] * {{24{1'd0}},index1_mul1_in[7:0]});
 						index1_mul1_b = (mem[index1_mul1_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul1_in[7:0]}));
 						index1_mul1_result = (index1_mul1_in [fixed-1]) ? (index1_mul1_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul1_a[47:16]+index1_mul1_b[47:16]) + 1'b1)) :(index1_mul1_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul1_a[47:16]+index1_mul1_b[47:16]));

@@ -10,13 +10,12 @@ module RNN(clk, rst);
 	parameter	noise_gru_size		= 48;
 	parameter	denoise_gru_size	= 96;
 
-	
-	parameter	denoise_output_size	= 22;
-	parameter	vad_output_size 	= 1;
-
 	parameter	INPUT_SIZE			= 42;
 	parameter	MAX_NEURONS			= 128;
-
+	parameter	WEIGHTS_SCALE		= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
+	parameter	HALF				= 32'b00000000_00000000_10000000_00000000;  // 1.f/2
+	parameter	ONE					= 32'b00000000_00000001_00000000_00000000;  // 1.f
+	parameter	MINUS_ONE			= 32'b11111111_11111111_00000000_00000000;
 
 	// gru input size
 	parameter	dense_out_size		= input_dense_size;
@@ -107,19 +106,23 @@ module RNN(clk, rst);
 		$readmemb("tanh_fixed.mem", tanh_mem);
 	end
 
-	integer		one			= 1;
-	integer		nb_input,		nb_neurons;
+	integer		nb_inputs,		nb_neurons;
 	integer		M,				N,				stride;
 	integer		in_1,			in_2,			out_1;
 	integer		index1,			index2,			index3;
 	reg			index1_ready,	index2_ready,	index3_ready;
-	reg			pass,			pass_start;
+	reg			pass1,			pass_start;
 	reg			pass1_end,		pass2_end;
 
-	reg 	[        fixed-1 : 0]	z[MAX_NEURONS-1:0], r[MAX_NEURONS-1:0];
-	reg 	[        fixed-1 : 0]	weights_scale = 32'b00000000_00000000_00000001_00000000;  // 1.f/256
-	reg 	[        fixed-1 : 0]	sum1, sum2, sum3;
+	reg		[	fixed-1 : 0]	z[MAX_NEURONS-1:0], r[MAX_NEURONS-1:0];
+	reg		[	fixed-1 : 0]	sum1, sum2, sum3;
 
+	reg		[ 2*fixed-1 : 0]	mul1_a, mul1_b;
+	reg		[ 2*fixed-1 : 0]	mul2_a, mul2_b;
+	reg		[ 2*fixed-1 : 0]	mul3_a, mul3_b, mul3_c;
+	reg		[ 2*fixed-1 : 0]	mul4_a, mul4_b, mul4_c;
+	reg		[	fixed-1 : 0]	mul3_i, mul3_t, mul4_i, mul4_t;
+	reg		[	fixed-1 : 0]	mul1_o, mul2_o, mul3_o, mul4_o;
 
 	reg								start_dense1, start_dense2, start_dense3;
 	wire							valid_dense1, valid_dense2, valid_dense3;
@@ -136,7 +139,7 @@ module RNN(clk, rst);
 			output size : input_dense_size = 24
 
 		gru1
-			input size : input_dense_size = 24
+			input size : dense_out_size = 24
 			output size : vad_gru_size = 24
 
 		dense2
@@ -160,27 +163,174 @@ module RNN(clk, rst);
 	always @ (posedge clk) begin
 
 
-		// layer == dense1
+		// dense1
 		if(layer == 0) begin
 			// integer & reg initialize
 			if(layer_init == 1'b1) begin
-				nb_input		= feature_size;
-				nb_neurons		= dense_out_size; 
+				nb_inputs		= feature_size;
+				nb_neurons		= input_dense_size; 
+				M				= nb_inputs;
+				N				= nb_neurons;
+				stride			= N;
+
 				index1			= 1'b0;
 				index2			= 1'b0;
 				index3			= 1'b0;
+
 				index1_ready	= 1'b1;
 				index2_ready	= 1'b0;
 				index3_ready	= 1'b0;
-				sum1 			= 0;
-				sum2			= 0;
-				sum3 			= 0;
-				pass			= 1'b1;
+
+				pass1			= 1'b1;
 				pass1_end		= 1'b0;
 				pass2_end		= 1'b0;
+
+				layer_init		= 1'b0;
 			end
+			else begin
+				if(index1 < N) begin
+					if (index1_ready) begin
+						sum1			= input_dense_bias[index1];
+						index1_ready	= 1'b0;
+						index2			= 0; 
+					end
+					if(index2 < M) begin
+						mul1_a			= input_dense_weights[(index2*stride) + index1] * feature[index2];
+						mul1_o			= mul1_a[47:16];
+						sum1			= sum1 + mul1_o;
+
+						index2			= index2 + 1;
+					end
+					else begin // index == M
+						mul3_a			= WEIGHTS_SCALE * sum1;
+						mul3_o			= mul3_a[47:16];
+
+						mul4_i			= mul3_o;
+						mul4_a			= (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
+						mul4_b			= (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
+						mul4_c			= mul4_a + mul4_b;
+						mul4_o			= (mul4_i[fixed-1]) ? /*-1*/(mul4_i[fixed-14] ? (MINUS_ONE) : (~mul4_c[47:16] + 1'b1)) : /*+1*/(mul4_i[fixed-14] ? (ONE):(mul4_c[47:16]));
+
+						dense_out[index1]	= mul4_o;
+
+						index1			= index1 + 1;
+						index1_ready	= 1'b1;
+					end
+				end
+				else begin	// index == N
+					layer_init	= 1'b1;
+					layer		= 1;
+				end
+			end
+		end
+
+		// gru1
+		if(layer == 1) begin
+			// integer & reg initialize
+			if(layer_init == 1'b1) begin
+				nb_inputs		= dense_out_size;
+				nb_neurons		= vad_gru_size; 
+				M				= nb_inputs;
+				N				= nb_neurons;
+				stride			= 3 * N;
+
+				index1			= 1'b0;
+				index2			= 1'b0;
+				index3			= 1'b0;
+
+				index1_ready	= 1'b1;
+				index2_ready	= 1'b0;
+				index3_ready	= 1'b0;
+
+				pass1			= 1'b1;
+				pass1_end		= 1'b0;
+				pass2_end		= 1'b0;
+
+				layer_init		= 1'b0;
+			end
+			else begin
+				if(pass1 == 1'b1) begin 
+					if(index1 < N) begin
+						if (index1_ready) begin
+							sum1			= vad_gru_bias[index1];
+							sum2			= vad_gru_bias[index1+N];
+							index1_ready	= 1'b0;
+							index2			= 0; 
+							index3			= 0;
+							index2_ready	= 1'b0;
+							index3_ready	= 1'b0;
+							pass1_end		= 1'b0;
+						end
+
+						if(index2 < M) begin
+							mul1_a			= vad_gru_input_weights[(index2*stride) + index1] * dense_out[index2];
+							mul1_o			= mul1_a[47:16];
+							sum1			= sum1 + mul1_o;
+
+							mul2_a			= vad_gru_input_weights[(index2*stride) + index1 + N] * dense_out[index2];
+							mul2_o			= mul2_a[47:16];
+							sum2			= sum2 + mul2_o;
+
+							index2			= index2 + 1;
+						end
+						else begin
+							index2_ready	= 1'b1;
+						end
+
+						if(index3 < M) begin
+							mul3_a			= vad_gru_recurrent_weights[(index3*stride) + index1] * dense_out[index3];
+							mul3_o			= mul3_a[47:16];
+							sum1			= sum1 + mul3_o;
+
+							mul4_a			= vad_gru_recurrent_weights[(index3*stride) + index1 + N] * dense_out[index3];
+							mul4_o			= mul4_a[47:16];
+							sum2			= sum2 + mul4_o;
+
+							index3			= index3 + 1;
+						end
+						else begin
+							index3_ready	= 1'b1;
+						end
+
+						if (index2_ready && index3_ready) begin
+							mul1_a = WEIGHTS_SCALE * sum1;
+							mul1_o = mul1_a[47:16];
+
+							mul3_i = {mul1_o[fixed-1], mul1_o[fixed-1:1]};
+							mul3_a = (tanh_mem[mul3_i[17:8]] * {{24{1'd0}},mul3_i[7:0]});
+							mul3_b = (tanh_mem[mul3_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul3_i[7:0]}));
+							mul3_c			= mul3_a + mul3_b;
+							mul3_t = (mul3_i[fixed-1]) ? (mul3_i[fixed-14] ? (MINUS_ONE) : (~mul3_c[47:16] + 1'b1)) : (mul3_i[fixed-14] ? (ONE):(mul3_c[47:16]));
+							mul3_o = ({mul3_t[fixed-1],mul3_t[fixed-1:1]}) + HALF;
+
+							z[index1] = mul3_o;
 
 
+							mul2_a = WEIGHTS_SCALE * sum2;
+							mul2_o = mul2_a[47:16];
+
+							mul4_i = {mul2_o[fixed-1], mul2_o[fixed-1:1]};
+							mul4_a = (tanh_mem[mul4_i[17:8]] * {{24{1'd0}},mul4_i[7:0]});
+							mul4_b = (tanh_mem[mul4_i[17:8] + 10'b0000_0000_01] * (ONE - {{24{1'd0}},mul4_i[7:0]}));
+							mul4_t = (mul4_i[fixed-1]) ? (mul4_i[fixed-14] ? (MINUS_ONE) : (~(mul3_a[47:16]+mul3_b[47:16]) + 1'b1)) : (mul3_i[fixed-14] ? (ONE):(mul3_a[47:16]+mul3_b[47:16]));
+							mul4_o = ({mul3_t[fixed-1],mul3_t[fixed-1:1]}) + HALF;
+
+							r[index1] = mul3_o;
+
+							index1	= index1 + 1;
+							index1_ready = 1'b1;
+						end
+					end
+					else begin	// index == N
+						layer_init = 1'b1;
+						layer = 1;
+					end
+				end
+				if(pass1 == 1'b0) begin
+					if(index1 < N) begin
+					end
+				end
+			end
 		end
 
 	end
