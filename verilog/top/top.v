@@ -3,34 +3,46 @@ module RNN(clk, rst);
 	parameter 	fixed 				= 32;
 
 	parameter	feature_size		= 42;
-	parameter	gain_size			= 22;
+	parameter	gains_size			= 22;
 	
 	parameter	input_dense_size	= 24;
 	parameter 	vad_gru_size		= 24;
 	parameter	noise_gru_size		= 48;
-
 	parameter	denoise_gru_size	= 96;
+
+	
 	parameter	denoise_output_size	= 22;
 	parameter	vad_output_size 	= 1;
-	parameter	INPUT_SIZE			= 42;
 
+	parameter	INPUT_SIZE			= 42;
+	parameter	MAX_NEURONS			= 128;
+
+
+	// gru input size
 	parameter	dense_out_size		= input_dense_size;
 	parameter	noise_input_size	= input_dense_size+vad_gru_size+INPUT_SIZE;
 	parameter	denoise_input_size	= vad_gru_size+noise_gru_size+INPUT_SIZE;
 
+	// dense layer sizes
+	parameter	input_dense_bias_size				= 24;
+	parameter	input_dense_weights_size			= 1008;
+	parameter	vad_output_bias_size				= 1;
+	parameter	vad_output_weights_size				= 24;
+	parameter	denoise_output_bias_size			= 22;
+	parameter	denoise_output_weights_size			= 2112;
+
+	// gru layer sizes
 	parameter	vad_gru_bias_size					= 72;
 	parameter	vad_gru_input_weights_size			= 1728;
 	parameter	vad_gru_recurrent_weights_size		= 1728;
-
 	parameter	noise_gru_bias_size					= 114;
 	parameter	noise_gru_input_weights_size		= 12960;
 	parameter	noise_gru_recurrent_weights_size	= 6912;
-
 	parameter	denoise_gru_bias_size				= 288;
 	parameter	denoise_gru_input_weights_size		= 32832;
 	parameter	denoise_gru_recurrent_weights_size	= 27648;
 
-	parameter	MAX_NEURONS							= 128;
+	
 
 	input						clk,	rst;
 
@@ -39,15 +51,24 @@ module RNN(clk, rst);
 	reg		[	fixed-1 : 0]	tanh_mem [(1<<10)-1:0];  
 
 	reg		[	fixed-1 : 0]	feature				[feature_size-1:0];
-	reg		[	fixed-1 : 0]	gain				[gain_size-1:0];
+	reg		[	fixed-1 : 0]	gains				[gains_size-1:0];
 	reg		[	fixed-1 : 0]	vad;
+
+	reg		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];
+	reg		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
+	reg		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
+	reg		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
+	reg		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
+	reg		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
 
 	reg		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
 	reg		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
 	reg		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
+	
 	reg		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
 	reg		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
 	reg		[	fixed-1 : 0]	noise_gru_recurrent_weights		[noise_gru_recurrent_weights_size-1:0];
+	
 	reg		[	fixed-1 : 0]	denoise_gru_bias				[denoise_gru_bias_size-1:0];
 	reg		[	fixed-1 : 0]	denoise_gru_input_weights		[denoise_gru_input_weights_size-1:0];
 	reg		[	fixed-1 : 0]	denoise_gru_recurrent_weights	[denoise_gru_recurrent_weights_size-1:0];
@@ -60,8 +81,20 @@ module RNN(clk, rst);
 	reg		[	fixed-1 : 0]	noise_input			[noise_input_size-1:0];
 	reg		[	fixed-1 : 0]	denoise_input		[denoise_input_size-1:0];
 
+	// mem read
 	initial begin
+		// input feature
 		$readmemb("feature_fixed.mem",							feature,						0, feature_size-1);
+		
+		// dense layer
+		$readmemb("input_dense_bias_fixed.mem",					input_dense_bias, 				0, input_dense_bias_size-1);
+		$readmemb("input_dense_weights_fixed.mem",				input_dense_weights,			0, input_dense_weights_size-1);
+		$readmemb("vad_output_bias_fixed.mem",					vad_output_bias,				0, vad_output_bias_size-1);
+		$readmemb("vad_output_weights_fixed.mem",				vad_output_weights,				0, vad_output_weights_size-1);
+		$readmemb("denoise_output_bias_fixed.mem",				denoise_output_bias,			0, denoise_output_bias_size-1);
+		$readmemb("denoise_output_weights_fixed.mem",			denoise_output_weights,			0, denoise_output_weights_size-1);
+	
+		// gru layer
 		$readmemb("vad_gru_bias_fixed.mem",						vad_gru_bias,					0, vad_gru_bias_size-1);
 		$readmemb("vad_gru_input_weights_fixed.mem",			vad_gru_input_weights,			0, vad_gru_input_weights_size-1);
 		$readmemb("vad_gru_recurrent_weights_fixed.mem",		vad_gru_recurrent_weights,		0, vad_gru_recurrent_weights_size-1);
@@ -97,6 +130,33 @@ module RNN(clk, rst);
 	reg			layer_init;
 
 
+	/*
+		dense1 
+			input size : feature_size = 42
+			output size : input_dense_size = 24
+
+		gru1
+			input size : input_dense_size = 24
+			output size : vad_gru_size = 24
+
+		dense2
+			input size : vad_gru_size = 24
+			output size : vad_size = 1
+
+		gru2
+			input size : noise_input_size = 90
+			output size : noise_gru_size = 48
+
+		gru3
+			input size : denoise_input_size = 114
+			output size : denoise_gru_size = 96
+
+		dense3
+			input size : denoise_gru_size = 96
+			output size : gains_size = 22
+	*/
+
+
 	always @ (posedge clk) begin
 
 
@@ -104,6 +164,8 @@ module RNN(clk, rst);
 		if(layer == 0) begin
 			// integer & reg initialize
 			if(layer_init == 1'b1) begin
+				nb_input		= feature_size;
+				nb_neurons		= dense_out_size; 
 				index1			= 1'b0;
 				index2			= 1'b0;
 				index3			= 1'b0;
