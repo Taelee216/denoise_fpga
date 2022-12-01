@@ -473,11 +473,24 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 
 	if (!silence) {
 
+		FILE *f_feat,	*f_gain, *f_state_in;
+		f_state_in = fopen("input_state_float.txt", "a");
+		fprintf(f_state_in, "vad_gru_state\n");
+		for (int j = 0; j < st->rnn.model->vad_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.vad_gru_state[j]);
+		fprintf(f_state_in, "\n");
+		fprintf(f_state_in, "noise_gru_state\n");
+		for (int j = 0; j < st->rnn.model->noise_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.noise_gru_state[j]);
+		fprintf(f_state_in, "\n");
+		fprintf(f_state_in, "denoise_gru_state\n");
+		for (int j = 0; j < st->rnn.model->denoise_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.denoise_gru_state[j]);
+		fprintf(f_state_in, "\n");
+		fclose(f_state_in);
+
+
 		compute_rnn(&st->rnn, gain, &vad_prob, features);
 
 		// 완성된다면, compute_rnn 대신 바이너리 파일을 읽어서 처리하자.
 
-		FILE *f_feat,	*f_gain;
 		if(1) {
 			f_feat = fopen("input_feature_float.txt", "a");
 			f_gain = fopen("output_gain_float.txt", "a");

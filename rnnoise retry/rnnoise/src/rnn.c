@@ -263,4 +263,21 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 			ACTIVATION_SIGMOID
 		};
 	*/
+
+		FILE *f_dense_out,	*f_noise_input, *f_denoise_input;
+
+		f_dense_out = fopen("dense_out_float.txt", "a");
+		for (int j = 0; j < MAX_NEURONS; j++) fprintf(f_dense_out, "%lf, ", dense_out[j]);
+		fprintf(f_dense_out, "\n");
+
+		f_noise_input = fopen("noise_input_float.txt", "a");
+		for (int j = 0; j < MAX_NEURONS*3; j++) fprintf(f_noise_input, "%lf, ", noise_input[j]);
+		fprintf(f_noise_input, "\n");
+
+		f_denoise_input = fopen("denoise_input_float.txt", "a");
+		for (int j = 0; j < MAX_NEURONS*3; j++) fprintf(f_denoise_input, "%lf, ", denoise_input[j]);
+		fprintf(f_denoise_input, "\n");
+		fclose(f_denoise_input);
+
+
 }
