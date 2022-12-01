@@ -12,10 +12,11 @@ module RNN(clk, rst, gains_out);
 
 	parameter	INPUT_SIZE			= 42;
 	parameter	MAX_NEURONS			= 128;
-	parameter	WEIGHTS_SCALE		= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
-	parameter	HALF				= 32'b00000000_00000000_10000000_00000000;  // 1.f/2
-	parameter	ONE					= 32'b00000000_00000001_00000000_00000000;  // 1.f
-	parameter	MINUS_ONE			= 32'b11111111_11111111_00000000_00000000;
+
+	reg signed		[	fixed-1 : 0]	WEIGHTS_SCALE		= 32'b00000000_00000000_00000001_00000000;  // 1.f/256
+	reg signed		[	fixed-1 : 0]	HALF				= 32'b00000000_00000000_10000000_00000000;  // 1.f/2
+	reg signed		[	fixed-1 : 0]	ONE					= 32'b00000000_00000001_00000000_00000000;  // 1.f
+	reg signed		[	fixed-1 : 0]	MINUS_ONE			= 32'b11111111_11111111_00000000_00000000;
 
 	// gru input size
 	parameter	dense_out_size		= input_dense_size;
@@ -454,14 +455,26 @@ module RNN(clk, rst, gains_out);
 								index2_ready	= 1'b0;
 								index3_ready	= 1'b0;
 								index2			= 0;
-								index2			= 0;
+								index3			= 0;
 							end
 						end
 						else begin
-							pass_start		= 1'b0;
+							if(index3 < N) begin
+								vad_gru_state[index3] = h[index3];
+								index3				= index3 + 1;
+							end
+							else begin
+								layer_init			= 1'b1;
+								layer				= 2;
+								pass_start			= 1'b0;
+								index1 = 0;
+								index2 = 0;
+								index3 = 0;
+							end
 						end
 					end
 				end
+				/*
 				else if (pass_start == 1'b0) begin
 					if(index3 < N) begin
 						vad_gru_state[index3] = h[index3];
@@ -476,6 +489,7 @@ module RNN(clk, rst, gains_out);
 						index3 = 0;
 					end
 				end
+				*/
 			end
 //    gru1    ***************************************************//
 
@@ -734,14 +748,26 @@ module RNN(clk, rst, gains_out);
 								index2_ready	= 1'b0;
 								index3_ready	= 1'b0;
 								index2			= 0;
-								index2			= 0;
+								index3			= 0;
 							end
 						end
 						else begin
-							pass_start		= 1'b0;
+							if(index3 < N) begin
+								noise_gru_state[index3] = h[index3];
+								index3				= index3 + 1;
+							end
+							else begin
+								layer_init			= 1'b1;
+								layer				= 5;
+								pass_start			= 1'b0;
+								index1 = 0;
+								index2 = 0;
+								index3 = 0;
+							end
 						end
 					end
 				end
+				/*
 				else if (pass_start == 1'b0) begin
 					if(index3 < N) begin
 						noise_gru_state[index3] = h[index3];
@@ -756,6 +782,7 @@ module RNN(clk, rst, gains_out);
 						index3 = 0;
 					end
 				end
+				*/
 			end
 //    gru2    ***************************************************//
 
@@ -941,14 +968,26 @@ module RNN(clk, rst, gains_out);
 								index2_ready	= 1'b0;
 								index3_ready	= 1'b0;
 								index2			= 0;
-								index2			= 0;
+								index3			= 0;
 							end
 						end
 						else begin
-							pass_start		= 1'b0;
+							if(index3 < N) begin
+								denoise_gru_state[index3] = h[index3];
+								index3				= index3 + 1;
+							end
+							else begin
+								layer_init			= 1'b1;
+								layer				= 7;
+								pass_start			= 1'b0;
+								index1 = 0;
+								index2 = 0;
+								index3 = 0;
+							end
 						end
 					end
 				end
+				/*
 				else if (pass_start == 1'b0) begin
 					if(index3 < N) begin
 						denoise_gru_state[index3] = h[index3];
@@ -963,6 +1002,7 @@ module RNN(clk, rst, gains_out);
 						index3 = 0;
 					end
 				end
+				*/
 			end
 //    gru3    ***************************************************//
 
