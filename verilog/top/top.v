@@ -114,7 +114,7 @@ module RNN(clk, rst);
 	reg			pass1,			pass_start;
 	reg			pass1_end,		pass2_end;
 
-	reg		[	fixed-1 : 0]	z[MAX_NEURONS-1:0], r[MAX_NEURONS-1:0];
+	reg		[	fixed-1 : 0]	z[MAX_NEURONS-1:0], r[MAX_NEURONS-1:0], h[MAX_NEURONS-1:0];
 	reg		[	fixed-1 : 0]	sum1, sum2, sum3;
 
 	reg		[ 2*fixed-1 : 0]	mul1_a, mul1_b;
@@ -359,7 +359,7 @@ module RNN(clk, rst);
 						end
 
 						if(index3 < M) begin
-							mul3_a = vad_gru_input_weights[(index2*stride) + index1 + (2*N)] * dense_out[index2];
+							mul3_a = vad_gru_input_weights[(index3*stride) + index1 + (2*N)] * vad_gru_state[index3];
 							mul3_t = mul3_a[47:16];
 							mul3_b = mul3_t * r[index3];
 							mul3_o = mul3_b[47:16];
@@ -372,26 +372,19 @@ module RNN(clk, rst);
 						end
 
 						if (index2_ready && index3_ready) begin
-							mul1_a = WEIGHTS_SCALE * sum1;
-							mul1_o = mul1_a[47:16];
+							mul2_a = WEIGHTS_SCALE * sum1;
+							mul2_o = (mul1_a[47] == 0)? mul1_a[47:16] : 32'b0;  
 
-							index1_mul1_in = { sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], sum3[fixed-1], {sum3[fixed-1:8]} };
-							index1_mul1_a = (mem[index1_mul1_in[17:8]] * {{24{1'd0}},index1_mul1_in[7:0]});
-							index1_mul1_b = (mem[index1_mul1_in[17:8] + 10'b0000_0000_01] * (32'b00000000_00000001_00000000_00000000 - {{24{1'd0}},index1_mul1_in[7:0]}));
-							index1_mul1_result = (index1_mul1_in [fixed-1]) ? (index1_mul1_in[fixed-14] ? (32'b11111111_11111111_00000000_00000000) : (~(index1_mul1_a[47:16]+index1_mul1_b[47:16]) + 1'b1)) :(index1_mul1_in[fixed-14] ? (32'b00000000_00000001_00000000_00000000):(index1_mul1_a[47:16]+index1_mul1_b[47:16]));
-							sum3 = index1_mul1_result;
+							mul4_a = z[index1] * vad_gru_state[index1];
+							mul4_b = (ONE - z[index1]) * mul2_o;
 
-							index1_mul3_result = z[index1] * input_state[index1];
-							index1_mul4_result = (one - z[index1]) * sum3;
-
-							output_state_array[index1] = index1_mul3_result[47:16] + index1_mul4_result[47:16];
+							h[index1] = mul4_a[47:16] + mul4_b[47:16];
 
 							index1	= index1 + 1;
 
 							index1_ready = 1'b1;
 							index2_ready = 1'b0;
 							index3_ready = 1'b0;
-							
 						end
 					end
 				end
@@ -402,40 +395,6 @@ module RNN(clk, rst);
 
 
 
-
-	dense1	compute_dense1	( dense_out,				feature,								clk,	start_dense1,	valid_dense1 );
-	gru1	compute_gru1	( vad_gru_state_reg,		dense_out,			vad_gru_state,		clk,	start_gru1,		valid_gru1 );
-	dense2	compute_dense2	( vad,						vad_gru_state,							clk,	start_dense2,	valid_dense2 );
-	
-	generate
-		genvar i;
-		for ( i = 0;	i < input_dense_size;	i = i + 1 ) begin
-			assign noise_input[(i+1)*fixed -1 : i*fixed] = dense_out[(i+1)*fixed : i*fixed];
-		end
-		for ( i = 0;	i < vad_gru_size;	i = i + 1 ) begin
-			assign noise_input[(i+input_dense_size+1)*fixed -1 : (i+input_dense_size)*fixed] = vad_gru_state_reg[(i+1)*fixed -1 : i*fixed];
-		end
-		for ( i = 0;	i < INPUT_SIZE; i = i + 1 ) begin 
-			assign noise_input[(i+input_dense_size+vad_gru_size+1)*fixed -1 : (i+input_dense_size+vad_gru_size)] = feature[(i+1)*fixed -1 : i*fixed];
-		end
-	endgenerate
-
-	gru2	compute_gru2	( noise_gru_state_reg, 		noise_input,		noise_gru_state,	clk,	start_gru2,		valid_gru2 );
-
-	generate
-		for ( i = 0;	i < vad_gru_size;	i = i + 1 ) begin
-			assign denoise_input[(i+1)*fixed -1 : i*fixed] = vad_gru_state_reg[(i+1)*fixed -1 : i*fixed];
-		end
-		for ( i = 0;	i < noise_gru_size;	i = i + 1 ) begin
-			assign denoise_input[(i+input_dense_size +1)*fixed -1 : (i+input_dense_size)-1] = noise_gru_state_reg[(i+1)*fixed -1 : i*fixed];
-		end
-		for ( i = 0;	i < INPUT_SIZE; i = i + 1 ) begin 
-			assign denoise_input[(i+input_dense_size+vad_gru_size +1)*fixed -1 : (i+input_dense_size + vad_gru_size) -1] = feature[(i+1)*fixed -1 : i*fixed];
-		end
-	endgenerate
-
-	gru3	compute_gru3	( denoise_gru_state_reg,	denoise_input,		denoise_gru_state,	clk,	start_gru3, 	valid_gru3 );
-	dense3	compute_dense3	( gains, 					denoise_gru_state,						clk,	start_dense3,	valid_dense3);
 
 	initial begin
 		start_dense1 = 1'b0;
