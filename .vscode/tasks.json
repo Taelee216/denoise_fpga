@@ -28,6 +28,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                "-fpermissive",
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
@@ -48,6 +49,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                "-fpermissive",
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
