@@ -639,8 +639,28 @@ module RNN(clk, rst, gains_out);
 
 //   load weights   ***************************************************//
 
+
+			if(layer == 7) begin 
+				if(index1 < input_dense_size) begin
+					noise_input[index1] = dense_out[index1];
+					index1 = index1 + 1;
+				end
+				else if(index1 < input_dense_size + vad_gru_size) begin 
+					noise_input[index1] = vad_gru_state[index1 - input_dense_size];
+					index1 = index1 + 1;
+				end
+				else if(index1 < input_dense_size + vad_gru_size + INPUT_SIZE) begin
+					noise_input[index1] = feature[index1 - input_dense_size - vad_gru_size];
+					index1 = index1 + 1;
+				end
+				else begin
+					layer		= 8;
+					index1 = 0;
+				end
+			end
+
 //    gru2    ***************************************************//
-			if(layer == 7) begin
+			if(layer == 8) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= noise_input_size;
@@ -807,7 +827,7 @@ module RNN(clk, rst, gains_out);
 							end
 							else begin
 								layer_init			= 1'b1;
-								layer				= 8;
+								layer				= 9;
 								pass_start			= 1'b0;
 								index1 = 0;
 								index2 = 0;
@@ -837,7 +857,7 @@ module RNN(clk, rst, gains_out);
 
 
 //   load weights   ***************************************************//
-			if (layer == 8) begin
+			if (layer == 9) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
 					layer_init		= 1'b0;
@@ -868,7 +888,7 @@ module RNN(clk, rst, gains_out);
 						index1_ready = 1'b0;
 						index2_ready = 1'b0;
 						index3_ready = 1'b0;
-						layer = 9;
+						layer = 10;
 						layer_init = 1'b1;
 					end
 				end
@@ -876,8 +896,28 @@ module RNN(clk, rst, gains_out);
 
 //   load weights   ***************************************************//
 
+			if(layer == 10) begin 
+				if(index1 < vad_gru_size) begin
+					denoise_input[index1] = vad_gru_state[index1];
+					index1 = index1 + 1;
+				end
+				else if(index1 < vad_gru_size + noise_gru_size) begin 
+					denoise_input[index1] = noise_gru_state[index1 - vad_gru_size];
+					index1 = index1 + 1;
+				end
+				else if(index1 < vad_gru_size + noise_gru_size + INPUT_SIZE) begin
+					denoise_input[index1] = feature[index1 - vad_gru_size - noise_gru_size];
+					index1 = index1 + 1;
+				end
+				else begin
+					layer		=11;
+					index1 = 0;
+				end
+			end
+
+
 //    gru3    ***************************************************//
-			if(layer == 9) begin
+			if(layer == 11) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= denoise_input_size;
@@ -1044,7 +1084,7 @@ module RNN(clk, rst, gains_out);
 							end
 							else begin
 								layer_init			= 1'b1;
-								layer				= 10;
+								layer				= 12;
 								pass_start			= 1'b0;
 								index1 = 0;
 								index2 = 0;
@@ -1073,7 +1113,7 @@ module RNN(clk, rst, gains_out);
 //    gru3    ***************************************************//
 
 //   load weights   ***************************************************//
-			if (layer == 10) begin
+			if (layer == 12) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
 					layer_init		= 1'b0;
@@ -1096,7 +1136,7 @@ module RNN(clk, rst, gains_out);
 						index2 = 0;
 						index1_ready = 1'b0;
 						index2_ready = 1'b0;
-						layer = 8;
+						layer = 13;
 						layer_init = 1'b1;
 					end
 				end
@@ -1105,7 +1145,7 @@ module RNN(clk, rst, gains_out);
 //   load weights   ***************************************************//
 
 //   dense3   ***************************************************//
-			if(layer == 10) begin
+			if(layer == 13) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= denoise_gru_size;
@@ -1161,7 +1201,7 @@ module RNN(clk, rst, gains_out);
 					end
 					else begin	// index == N
 						layer_init	= 1'b1;
-						layer		= 11;
+						layer		= 14;
 						pass_start	= 1'b0;
 						index1 = 0;
 						index2 = 0;
@@ -1172,7 +1212,7 @@ module RNN(clk, rst, gains_out);
 //   dense3   ***************************************************//
 
 
-			if(layer == 11) begin
+			if(layer == 14) begin
 				if (index1 < gains_size) begin
 					gains_out = gains[index1];
 					index1 = index1 + 1;
