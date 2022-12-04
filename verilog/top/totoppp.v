@@ -187,6 +187,10 @@ module RNN(clk, rst, gains_out);
 						layer = 1;
 						layer_init = 1'b1;
 					end
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
+					end
 				end
 			end
 //   load weights   ***************************************************//
@@ -292,6 +296,11 @@ module RNN(clk, rst, gains_out);
 						index3_ready = 1'b0;
 						layer = 3;
 						layer_init = 1'b1;
+					end
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
+						index3 = index3+1;
 					end
 				end
 			end
@@ -526,6 +535,10 @@ module RNN(clk, rst, gains_out);
 						index2_ready = 1'b0;
 						layer = 5;
 						layer_init = 1'b1;
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
+					end
 					end
 				end
 			end
@@ -633,6 +646,11 @@ module RNN(clk, rst, gains_out);
 						index3_ready = 1'b0;
 						layer = 7;
 						layer_init = 1'b1;
+					end
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
+						index3 = index3+1;
 					end
 				end
 			end
@@ -891,6 +909,11 @@ module RNN(clk, rst, gains_out);
 						layer = 10;
 						layer_init = 1'b1;
 					end
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
+						index3 = index3+1;
+					end
 				end
 			end
 
@@ -1138,6 +1161,10 @@ module RNN(clk, rst, gains_out);
 						index2_ready = 1'b0;
 						layer = 13;
 						layer_init = 1'b1;
+					end
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
 					end
 				end
 			end
