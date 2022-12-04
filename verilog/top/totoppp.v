@@ -164,6 +164,7 @@ module RNN(clk, rst, gains_out);
 			if (layer == 0) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
+					index2			= 0;
 					layer_init		= 1'b0;
 				end
 				else begin
@@ -266,6 +267,8 @@ module RNN(clk, rst, gains_out);
 			if (layer == 2) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
+					index2			= 0;
+					index3			= 0;
 					layer_init		= 1'b0;
 				end
 				else begin
@@ -513,6 +516,7 @@ module RNN(clk, rst, gains_out);
 			if (layer == 4) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
+					index2			= 0;
 					layer_init		= 1'b0;
 				end
 				else begin
@@ -616,6 +620,8 @@ module RNN(clk, rst, gains_out);
 			if (layer == 6) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
+					index2			= 0;
+					index3			= 0;
 					layer_init		= 1'b0;
 				end
 				else begin
@@ -878,6 +884,8 @@ module RNN(clk, rst, gains_out);
 			if (layer == 9) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
+					index2			= 0;
+					index3			= 0;
 					layer_init		= 1'b0;
 				end
 				else begin
@@ -1139,6 +1147,8 @@ module RNN(clk, rst, gains_out);
 			if (layer == 12) begin
 				if(layer_init == 1'b1) begin
 					index1			= 0;
+					index2			= 0;
+
 					layer_init		= 1'b0;
 				end
 				else begin
