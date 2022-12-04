@@ -55,16 +55,16 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	gains				[gains_size-1:0];
 	reg signed		[	fixed-1 : 0]	vad;
 
-	reg signed		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];
-	reg signed		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
-	reg signed		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
-	reg signed		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
-	reg signed		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
-	reg signed		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
+	// reg signed		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];
+	// reg signed		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
+	// reg signed		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
+	// reg signed		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
+	// reg signed		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
+	// reg signed		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
 
-	reg signed		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
-	reg signed		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
-	reg signed		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
+	// reg signed		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
+	// reg signed		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
+	// reg signed		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
 	
 	reg signed		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
 	reg signed		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
@@ -82,10 +82,12 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	noise_input						[noise_input_size-1:0];
 	reg signed		[	fixed-1 : 0]	denoise_input					[denoise_input_size-1:0];
 	
-	reg signed		[   fixed-1 : 0] gains_read [gains_size-1:0];
+	reg signed		[   fixed-1 : 0]	gains_read						[gains_size-1:0];
+
+
 	//for new 
 	reg signed		[	fixed-1 : 0]	bias							[287:0];
-	reg signed		[	fixed-1 : 0]	weight							[32831:0];
+	reg signed		[	fixed-1 : 0]	weights							[32831:0];
 	reg signed		[	fixed-1 : 0]	recurrent						[27647:0];
 
 
@@ -155,34 +157,17 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	layer;
 	reg signed							layer_init;
 
-	/*
-		dense1 
-			input size : feature_size = 42
-			output size : input_dense_size = 24
+	reg signed		[	fixed-1 : 0]	bias_in,	weights_in,		recurrent_in;
+	wire			[	fixed-1 : 0]	input_dense_bias_out,	input_dense_weights_out;
+	wire			[	fixed-1 : 0]	vad_gru_bias_out,	vad_gru_input_weights_out, vad_gru_recurrent_weights_out;
 
-		gru1
-			input size : dense_out_size = 24
-			output size : vad_gru_size = 24
+	input_dense_bias_bram		input_dense_bias	(.clka(clk),	.addra(index1), .douta(input_dense_bias_out));
+	input_dense_weights_bram	input_dense_weights	(.clka(clk),	.addra(index1), .douta(input_dense_weights_out));
 
-		dense2
-			input size : vad_gru_size = 24
-			output size : vad_size = 1
 
-		gru2
-			input size : noise_input_size = 90
-			output size : noise_gru_size = 48
+	vad_gru_bias_bram			vad_gru_bias		(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
+	vad_gru_input_weights_bram			vad_gru_input_weights		(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
 
-		gru3
-			input size : denoise_input_size = 114
-			output size : denoise_gru_size = 96
-
-		dense3
-			input size : denoise_gru_size = 96
-			output size : gains_size = 22
-	*/
-
-	reg signed flag = 1'b0;
-	reg signed [15:0] w;
 
 	always @ (posedge clk) begin
 		if(rst == 1'b1) begin
@@ -190,53 +175,43 @@ module RNN(clk, rst, gains_out);
 			layer_init = 1'b1;
 		end
 		
-		if ((mul1_a[63:48] != 16'b00000000_00000000) && (mul1_a[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul1_a[63:48];
-		end
-		if ((mul2_a[63:48] != 16'b00000000_00000000) && (mul2_a[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul2_a[63:48];
-		end
-		if ((mul3_a[63:48] != 16'b00000000_00000000) && (mul3_a[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul3_a[63:48];
-		end
-		if ((mul3_b[63:48] != 16'b00000000_00000000) && (mul3_b[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul3_b[63:48];
-		end
-		if ((mul3_c[63:48] != 16'b00000000_00000000) && (mul3_c[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul3_c[63:48];
-		end
-		if ((mul4_a[63:48] != 16'b00000000_00000000) && (mul4_a[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul4_a[63:48];
-		end
-		if ((mul4_b[63:48] != 16'b00000000_00000000) && (mul4_b[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul4_b[63:48];
-		end
-		if ((mul4_c[63:48] != 16'b00000000_00000000) && (mul4_c[63:48] != 16'b11111111_11111111)) begin
-		flag = 1'b1;
-		w = mul4_c[63:48];
-		end
-		
-		
 		
 	
 		if(rst == 1'b0) begin
-//   dense1   ***************************************************//
+			
+//   load weights   ***************************************************//
 			if (layer == 0) begin
-
-					parameter	vad_gru_bias_size					= 72;
-					parameter	vad_gru_input_weights_size			= 1728;
-					parameter	vad_gru_recurrent_weights_size		= 1728;
-				bias = vad_gru_bias;
-				
+				if(layer_init == 1'b1) begin
+					index1			= 0;
+					layer_init		= 1'b0;
+				end
+				else begin
+					if(index1 < input_dense_bias_size) begin
+						bias[index1] = input_dense_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < input_dense_weights_size) begin
+						weights[index2] = input_dense_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					if (index1_ready && index2_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						layer = 1;
+						layer_init = 1'b1;
+					end
+				end
 			end
-			if(layer == 0) begin
+//   load weights   ***************************************************//
+				
+//   dense1   ***************************************************//
+			if(layer == 1) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= feature_size;
@@ -260,13 +235,13 @@ module RNN(clk, rst, gains_out);
 				else begin
 					if(index1 < N) begin
 						if (index1_ready) begin
-							sum1			= input_dense_bias[index1];
+							sum1			= bias[index1];
 							index1_ready	= 1'b0;
 							index2			= 0; 
 							index3			= 0;
 						end
 						else if(index2 < M) begin
-							mul1_a			= input_dense_weights[(index2*stride) + index1] * feature[index2];
+							mul1_a			= weights[(index2*stride) + index1] * feature[index2];
 							mul1_o			= mul1_a[47:16];
 							sum1			= sum1 + mul1_o;
 
@@ -292,7 +267,7 @@ module RNN(clk, rst, gains_out);
 					end
 					else begin	// index == N
 						layer_init	= 1'b1;
-						layer		= 1;
+						layer		= 2;
 						pass_start	= 1'b0;
 						index1 = 0;
 						index2 = 0;
@@ -302,13 +277,14 @@ module RNN(clk, rst, gains_out);
 			end
 //   dense1   ***************************************************//
 
+//   load weights   ***************************************************//
 
 
-
+//   load weights   ***************************************************//
 
 
 //    gru1    ***************************************************//
-			if(layer == 1) begin
+			if(layer == 3) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= dense_out_size;
