@@ -92,7 +92,7 @@ module for_input_dense_weight
     endgenerate
     assign sum = tmpsum[0]+tmpsum[1]+tmpsum[2]+tmpsum[3]+tmpsum[4]+tmpsum[5]+tmpsum[6]+tmpsum[7]+tmpsum[8]+tmpsum[9]+tmpsum[10]+tmpsum[11]+tmpsum[12]+tmpsum[13]+tmpsum[14]+tmpsum[15]+tmpsum[16]+tmpsum[17]+tmpsum[18]+tmpsum[19]+tmpsum[20]+tmpsum[21]+tmpsum[22]+tmpsum[23]+tmpsum[24]+tmpsum[25]+tmpsum[26]+tmpsum[27]+tmpsum[28]+tmpsum[29]+tmpsum[30]+tmpsum[31]+tmpsum[32]+tmpsum[33]+tmpsum[34]+tmpsum[35]+tmpsum[36]+tmpsum[37]+tmpsum[38]+tmpsum[39]+tmpsum[40]+tmpsum[41];
 endmodule
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module dense2(clk, vad_gru_state, vad);
     //parameter declaration
     parameter                       fixed       = 32;
@@ -137,7 +137,7 @@ module dense2(clk, vad_gru_state, vad);
     sigmoid_lut sigsig (clk,tmpout, vad );
 endmodule
 
-
+//////////////////////////////////////////////////////////////////////////////////////////
 module dense3(clk, denoise_gru_state, gains);
     //parameter declaration
     parameter                       fixed       = 32;
