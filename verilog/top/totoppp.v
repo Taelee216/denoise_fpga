@@ -132,7 +132,7 @@ module RNN(clk, rst, gains_out);
 	input_dense_weights_bram			input_dense_weights				(.clka(clk),	.addra(index2), .douta(input_dense_weights_out));
 	//gru1
 	vad_gru_bias_bram					vad_gru_bias					(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
-	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk),	.addra(index2), .douta(vad_gru_bias_out));
+	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk),	.addra(index2), .douta(vad_gru_input_weights_out));
 	vad_gru_recurrent_weights_bram		vad_gru_recurrent_weights		(.clka(clk),	.addra(index3),	.douta(vad_gru_recurrent_weights_out));
 	//dense2
 	vad_output_bias_bram				vad_output_bias					(.clka(clk),	.addra(index1), .douta(vad_output_bias_out));
