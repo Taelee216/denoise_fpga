@@ -535,10 +535,10 @@ module RNN(clk, rst, gains_out);
 						index2_ready = 1'b0;
 						layer = 5;
 						layer_init = 1'b1;
+					end
 					else begin
 						index1 = index1+1;
 						index2 = index2+1;
-					end
 					end
 				end
 			end
