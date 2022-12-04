@@ -59,20 +59,20 @@ module RNN(clk, rst, gains_out);
 	// reg signed		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
 	// reg signed		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
 	// reg signed		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
-	// reg signed		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
-	// reg signed		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
+	//reg signed		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
+	//reg signed		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
 
 	// reg signed		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
 	// reg signed		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
 	// reg signed		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
 	
-	reg signed		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
-	reg signed		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
-	reg signed		[	fixed-1 : 0]	noise_gru_recurrent_weights		[noise_gru_recurrent_weights_size-1:0];
+	//reg signed		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
+	//reg signed		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
+	//reg signed		[	fixed-1 : 0]	noise_gru_recurrent_weights		[noise_gru_recurrent_weights_size-1:0];
 	
-	reg signed		[	fixed-1 : 0]	denoise_gru_bias				[denoise_gru_bias_size-1:0];
-	reg signed		[	fixed-1 : 0]	denoise_gru_input_weights		[denoise_gru_input_weights_size-1:0];
-	reg signed		[	fixed-1 : 0]	denoise_gru_recurrent_weights	[denoise_gru_recurrent_weights_size-1:0];
+	//reg signed		[	fixed-1 : 0]	denoise_gru_bias				[denoise_gru_bias_size-1:0];
+	//reg signed		[	fixed-1 : 0]	denoise_gru_input_weights		[denoise_gru_input_weights_size-1:0];
+	//reg signed		[	fixed-1 : 0]	denoise_gru_recurrent_weights	[denoise_gru_recurrent_weights_size-1:0];
 
 	reg signed		[	fixed-1 : 0]	vad_gru_state					[vad_gru_size-1:0];
 	reg signed		[	fixed-1 : 0]	noise_gru_state					[noise_gru_size-1:0];
@@ -89,7 +89,6 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	bias							[287:0];
 	reg signed		[	fixed-1 : 0]	weights							[32831:0];
 	reg signed		[	fixed-1 : 0]	recurrent						[27647:0];
-
 
 	// mem read
 	initial begin
@@ -157,16 +156,35 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	layer;
 	reg signed							layer_init;
 
-	reg signed		[	fixed-1 : 0]	bias_in,	weights_in,		recurrent_in;
 	wire			[	fixed-1 : 0]	input_dense_bias_out,	input_dense_weights_out;
-	wire			[	fixed-1 : 0]	vad_gru_bias_out,	vad_gru_input_weights_out, vad_gru_recurrent_weights_out;
+	wire			[	fixed-1 : 0]	vad_gru_bias_out,		vad_gru_input_weights_out,	vad_gru_recurrent_weights_out;
+	wire			[	fixed-1 : 0]	vad_output_bias_out,	vad_output_weights_out;
+	wire			[	fixed-1 : 0]	noise_gru_bias_out,		noise_gru_input_weights_out,	noise_gru_recurrent_weights_out;
+	wire			[	fixed-1 : 0]	denoise_gru_bias_out,	denoise_gru_input_weights_out,	denoise_gru_recurrent_weights_out;
+	wire			[	fixed-1 : 0]	denoise_output_bias_out,	denoise_output_weights_out;
 
-	input_dense_bias_bram		input_dense_bias	(.clka(clk),	.addra(index1), .douta(input_dense_bias_out));
-	input_dense_weights_bram	input_dense_weights	(.clka(clk),	.addra(index1), .douta(input_dense_weights_out));
 
-
-	vad_gru_bias_bram			vad_gru_bias		(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
-	vad_gru_input_weights_bram			vad_gru_input_weights		(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
+	//dense1
+	input_dense_bias_bram				input_dense_bias				(.clka(clk),	.addra(index1), .douta(input_dense_bias_out));
+	input_dense_weights_bram			input_dense_weights				(.clka(clk),	.addra(index2), .douta(input_dense_weights_out));
+	//gru1
+	vad_gru_bias_bram					vad_gru_bias					(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
+	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk),	.addra(index2), .douta(vad_gru_bias_out));
+	vad_gru_recurrent_weights_bram		vad_gru_recurrent_weights		(.clka(clk),	.addra(index3),	.douta(vad_gru_recurrent_weights_out));
+	//dense2
+	vad_output_bias_bram				vad_output_bias					(.clka(clk),	.addra(index1), .douta(vad_output_bias_out));
+	vad_output_weights_bram				vad_output_weights				(.clka(clk),	.addra(index2), .douta(vad_output_weights_out));
+	//gru2
+	noise_gru_bias_bram					noise_gru_bias					(.clka(clk),	.addra(index1),	.douta(noise_gru_bias_out));
+	noise_gru_input_weights_bram		noise_gru_input_weights			(.clka(clk),	.addra(index2),	.douta(noise_gru_input_weights_out));
+	noise_gru_recurrent_weights_bram	noise_gru_recurrent_weights		(.clka(clk),	.addra(index3),	.douta(noise_gru_recurrent_weights_out));
+	//gru3
+	denoise_gru_bias_bram				denoise_gru_bias				(.clka(clk),	.addra(index1),	.douta(denoise_gru_bias_out));
+	denoise_gru_input_weights_bram		denoise_gru_input_weights		(.clka(clk),	.addra(index2),	.douta(denoise_gru_input_weights_out));
+	denoise_gru_recurrent_weights_bram	denoise_gru_recurrent_weights	(.clka(clk),	.addra(index3),	.douta(denoise_gru_recurrent_weights_out));
+	//dense3
+	denoise_output_bias_bram			denoise_output_bias				(.clka(clk),	.addra(index1), .douta(denoise_output_bias_out));
+	denoise_output_weights_bram			denoise_output_weights			(.clka(clk),	.addra(index2), .douta(denoise_output_weights_out));	
 
 
 	always @ (posedge clk) begin
@@ -278,7 +296,42 @@ module RNN(clk, rst, gains_out);
 //   dense1   ***************************************************//
 
 //   load weights   ***************************************************//
-
+			if (layer == 2) begin
+				if(layer_init == 1'b1) begin
+					index1			= 0;
+					layer_init		= 1'b0;
+				end
+				else begin
+					if(index1  < vad_gru_bias_size) begin
+						bias[index1] = vad_gru_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < vad_gru_output_weights_size) begin
+						weights[index2] = vad_gru_output_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					if(index3 < vad_gru_recurrent_weights_size) begin
+						recurrent[index3] = vad_gru_recurrent_weights_out;
+					end
+					else begin
+						index3_ready = 1'b1;
+					end
+					if (index1_ready && index2_ready && index3_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index3 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
+						layer = 3;
+						layer_init = 1'b1;
+					end
+				end
+			end
 
 //   load weights   ***************************************************//
 
@@ -311,8 +364,8 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b1) begin 
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum1			= vad_gru_bias[index1];
-								sum2			= vad_gru_bias[index1+N];
+								sum1			= bias[index1];
+								sum2			= bias[index1+N];
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -321,11 +374,11 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index2 < M) begin
-								mul1_a			= vad_gru_input_weights[(index2*stride) + index1] * dense_out[index2];
+								mul1_a			= weights[(index2*stride) + index1] * dense_out[index2];
 								mul1_o			= mul1_a[47:16];
 								sum1			= sum1 + mul1_o;
 
-								mul2_a			= vad_gru_input_weights[(index2*stride) + index1 + N] * dense_out[index2];
+								mul2_a			= weights[(index2*stride) + index1 + N] * dense_out[index2];
 								mul2_o			= mul2_a[47:16];
 								sum2			= sum2 + mul2_o;
 
@@ -336,11 +389,11 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								mul3_a			= vad_gru_recurrent_weights[(index3*stride) + index1] * vad_gru_state[index3];
+								mul3_a			= recurrent[(index3*stride) + index1] * vad_gru_state[index3];
 								mul3_o			= mul3_a[47:16];
 								sum1			= sum1 + mul3_o;
 
-								mul4_a			= vad_gru_recurrent_weights[(index3*stride) + index1 + N] * vad_gru_state[index3];
+								mul4_a			= recurrent[(index3*stride) + index1 + N] * vad_gru_state[index3];
 								mul4_o			= mul4_a[47:16];
 								sum2			= sum2 + mul4_o;
 
@@ -399,7 +452,7 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b0) begin
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum3			= vad_gru_bias[index1 + 2*N];
+								sum3			= bias[index1 + 2*N];
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -408,7 +461,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index2 < M) begin
-								mul1_a			= vad_gru_input_weights[(index2*stride) + index1 + (2*N)] * dense_out[index2];
+								mul1_a			= weights[(index2*stride) + index1 + (2*N)] * dense_out[index2];
 								mul1_o			= mul1_a[47:16];
 								sum3			= sum3 + mul1_o;
 
@@ -419,7 +472,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								mul3_a			= vad_gru_recurrent_weights[(index3*stride) + index1 + (2*N)] * vad_gru_state[index3];
+								mul3_a			= recurrent[(index3*stride) + index1 + (2*N)] * vad_gru_state[index3];
 								mul3_t			= mul3_a[47:16];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[47:16];
@@ -456,7 +509,7 @@ module RNN(clk, rst, gains_out);
 							end
 							else begin
 								layer_init			= 1'b1;
-								layer				= 2;
+								layer				= 4;
 								pass_start			= 1'b0;
 								index1 = 0;
 								index2 = 0;
@@ -484,13 +537,40 @@ module RNN(clk, rst, gains_out);
 			end
 //    gru1    ***************************************************//
 
+//   load weights   ***************************************************//
+			if (layer == 4) begin
+				if(layer_init == 1'b1) begin
+					index1			= 0;
+					layer_init		= 1'b0;
+				end
+				else begin
+					if(index1 < vad_output_bias_size) begin
+						bias[index1] = vad_output_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < vad_output_weights_size) begin
+						weights[index2] = vad_output_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					if (index1_ready && index2_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						layer = 5;
+						layer_init = 1'b1;
+					end
+				end
+			end
 
-
-
-
+//   load weights   ***************************************************//
 
 //   dense2   ***************************************************//
-			if(layer == 2) begin
+			if(layer == 5) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= vad_gru_size;
@@ -514,12 +594,12 @@ module RNN(clk, rst, gains_out);
 				else begin
 					if(index1 < N) begin
 						if (index1_ready) begin
-							sum1			= vad_output_bias[index1];
+							sum1			= bias[index1];
 							index1_ready	= 1'b0;
 							index2			= 0; 
 						end
 						if(index2 < M) begin
-							mul1_a			= vad_output_weights[(index2*stride) + index1] * vad_gru_state[index2];
+							mul1_a			= weights[(index2*stride) + index1] * vad_gru_state[index2];
 							mul1_o			= mul1_a[47:16];
 							sum1			= sum1 + mul1_o;
 
@@ -544,7 +624,7 @@ module RNN(clk, rst, gains_out);
 					end
 					else begin	// index == N
 						layer_init	= 1'b1;
-						layer		= 3;
+						layer		= 6;
 						pass_start	= 1'b0;
 						index1 = 0;
 						index2 = 0;
@@ -556,29 +636,48 @@ module RNN(clk, rst, gains_out);
 
 
 
-			if(layer == 3) begin 
-				if(index1 < input_dense_size) begin
-					noise_input[index1] = dense_out[index1];
-					index1 = index1 + 1;
-				end
-				else if(index1 < input_dense_size + vad_gru_size) begin 
-					noise_input[index1] = vad_gru_state[index1 - input_dense_size];
-					index1 = index1 + 1;
-				end
-				else if(index1 < input_dense_size + vad_gru_size + INPUT_SIZE) begin
-					noise_input[index1] = feature[index1 - input_dense_size - vad_gru_size];
-					index1 = index1 + 1;
+//   load weights   ***************************************************//
+			if (layer == 6) begin
+				if(layer_init == 1'b1) begin
+					index1			= 0;
+					layer_init		= 1'b0;
 				end
 				else begin
-					layer		= 4;
-					index1 = 0;
+					if(index1  < noise_gru_bias_size) begin
+						bias[index1] = noise_gru_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < noise_gru_weights_size) begin
+						weights[index2] = noise_gru_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					if(index3 < noise_gru_recurrent_weights_size) begin
+						recurrent[index3] = noise_gru_recurrent_weights_out;
+					end
+					else begin
+						index3_ready = 1'b1;
+					end
+					if (index1_ready && index2_ready && index3_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index3 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
+						layer = 7;
+						layer_init = 1'b1;
+					end
 				end
 			end
 
-
+//   load weights   ***************************************************//
 
 //    gru2    ***************************************************//
-			if(layer == 4) begin
+			if(layer == 7) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= noise_input_size;
@@ -605,8 +704,8 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b1) begin 
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum1			= noise_gru_bias[index1];
-								sum2			= noise_gru_bias[index1+N];
+								sum1			= bias[index1];
+								sum2			= bias[index1+N];
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -615,11 +714,11 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index2 < M) begin
-								mul1_a			= noise_gru_input_weights[(index2*stride) + index1] * noise_input[index2];
+								mul1_a			= weights[(index2*stride) + index1] * noise_input[index2];
 								mul1_o			= mul1_a[47:16];
 								sum1			= sum1 + mul1_o;
 
-								mul2_a			= noise_gru_input_weights[(index2*stride) + index1 + N] * noise_input[index2];
+								mul2_a			= weights[(index2*stride) + index1 + N] * noise_input[index2];
 								mul2_o			= mul2_a[47:16];
 								sum2			= sum2 + mul2_o;
 
@@ -630,11 +729,11 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								mul3_a			= noise_gru_recurrent_weights[(index3*stride) + index1] * noise_gru_state[index3];
+								mul3_a			= recurrent[(index3*stride) + index1] * noise_gru_state[index3];
 								mul3_o			= mul3_a[47:16];
 								sum1			= sum1 + mul3_o;
 
-								mul4_a			= noise_gru_recurrent_weights[(index3*stride) + index1 + N] * noise_gru_state[index3];
+								mul4_a			= recurrent[(index3*stride) + index1 + N] * noise_gru_state[index3];
 								mul4_o			= mul4_a[47:16];
 								sum2			= sum2 + mul4_o;
 
@@ -688,7 +787,7 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b0) begin
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum3			= noise_gru_bias[index1 + 2*N];
+								sum3			= bias[index1 + 2*N];
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -697,7 +796,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index2 < M) begin
-								mul1_a			= noise_gru_input_weights[(index2*stride) + index1 + (2*N)] * noise_input[index2];
+								mul1_a			= weights[(index2*stride) + index1 + (2*N)] * noise_input[index2];
 								mul1_o			= mul1_a[47:16];
 								sum3			= sum3 + mul1_o;
 
@@ -708,7 +807,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								mul3_a			= noise_gru_recurrent_weights[(index3*stride) + index1 + (2*N)] * noise_gru_state[index3];
+								mul3_a			= recurrent[(index3*stride) + index1 + (2*N)] * noise_gru_state[index3];
 								mul3_t			= mul3_a[47:16];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[47:16];
@@ -745,7 +844,7 @@ module RNN(clk, rst, gains_out);
 							end
 							else begin
 								layer_init			= 1'b1;
-								layer				= 5;
+								layer				= 8;
 								pass_start			= 1'b0;
 								index1 = 0;
 								index2 = 0;
@@ -774,28 +873,48 @@ module RNN(clk, rst, gains_out);
 //    gru2    ***************************************************//
 
 
-			if(layer == 5) begin 
-				if(index1 < vad_gru_size) begin
-					denoise_input[index1] = vad_gru_state[index1];
-					index1 = index1 + 1;
-				end
-				else if(index1 < vad_gru_size + noise_gru_size) begin 
-					denoise_input[index1] = noise_gru_state[index1 - vad_gru_size];
-					index1 = index1 + 1;
-				end
-				else if(index1 < vad_gru_size + noise_gru_size + INPUT_SIZE) begin
-					denoise_input[index1] = feature[index1 - vad_gru_size - noise_gru_size];
-					index1 = index1 + 1;
+//   load weights   ***************************************************//
+			if (layer == 8) begin
+				if(layer_init == 1'b1) begin
+					index1			= 0;
+					layer_init		= 1'b0;
 				end
 				else begin
-					layer		=6;
-					index1 = 0;
+					if(index1  < denoise_gru_bias_size) begin
+						bias[index1] = denoise_gru_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < denoise_gru_input_weights_size) begin
+						weights[index2] = denoise_gru_input_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					if(index3 < denoise_gru_recurrent_weights_size) begin
+						recurrent[index3] = denoise_gru_recurrent_weights_out;
+					end
+					else begin
+						index3_ready = 1'b1;
+					end
+					if (index1_ready && index2_ready && index3_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index3 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						index3_ready = 1'b0;
+						layer = 9;
+						layer_init = 1'b1;
+					end
 				end
 			end
 
+//   load weights   ***************************************************//
 
 //    gru3    ***************************************************//
-			if(layer == 6) begin
+			if(layer == 9) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= denoise_input_size;
@@ -822,8 +941,8 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b1) begin 
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum1			= denoise_gru_bias[index1];
-								sum2			= denoise_gru_bias[index1+N];
+								sum1			= bias[index1];
+								sum2			= bias[index1+N];
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -832,11 +951,11 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index2 < M) begin
-								mul1_a			= denoise_gru_input_weights[(index2*stride) + index1] * denoise_input[index2];
+								mul1_a			= weights[(index2*stride) + index1] * denoise_input[index2];
 								mul1_o			= mul1_a[47:16];
 								sum1			= sum1 + mul1_o;
 
-								mul2_a			= denoise_gru_input_weights[(index2*stride) + index1 + N] * denoise_input[index2];
+								mul2_a			= weights[(index2*stride) + index1 + N] * denoise_input[index2];
 								mul2_o			= mul2_a[47:16];
 								sum2			= sum2 + mul2_o;
 
@@ -847,11 +966,11 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								mul3_a			= denoise_gru_recurrent_weights[(index3*stride) + index1] * denoise_gru_state[index3];
+								mul3_a			= recurrent[(index3*stride) + index1] * denoise_gru_state[index3];
 								mul3_o			= mul3_a[47:16];
 								sum1			= sum1 + mul3_o;
 
-								mul4_a			= denoise_gru_recurrent_weights[(index3*stride) + index1 + N] * denoise_gru_state[index3];
+								mul4_a			= recurrent[(index3*stride) + index1 + N] * denoise_gru_state[index3];
 								mul4_o			= mul4_a[47:16];
 								sum2			= sum2 + mul4_o;
 
@@ -905,7 +1024,7 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b0) begin
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum3			= denoise_gru_bias[index1 + 2*N];
+								sum3			= bias[index1 + 2*N];
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -914,7 +1033,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index2 < M) begin
-								mul1_a			= denoise_gru_input_weights[(index2*stride) + index1 + (2*N)] * denoise_input[index2];
+								mul1_a			= weights[(index2*stride) + index1 + (2*N)] * denoise_input[index2];
 								mul1_o			= mul1_a[47:16];
 								sum3			= sum3 + mul1_o;
 
@@ -925,7 +1044,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								mul3_a			= denoise_gru_recurrent_weights[(index3*stride) + index1 + (2*N)] * denoise_gru_state[index3];
+								mul3_a			= recurrent[(index3*stride) + index1 + (2*N)] * denoise_gru_state[index3];
 								mul3_t			= mul3_a[47:16];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[47:16];
@@ -962,7 +1081,7 @@ module RNN(clk, rst, gains_out);
 							end
 							else begin
 								layer_init			= 1'b1;
-								layer				= 7;
+								layer				= 10;
 								pass_start			= 1'b0;
 								index1 = 0;
 								index2 = 0;
@@ -990,10 +1109,40 @@ module RNN(clk, rst, gains_out);
 			end
 //    gru3    ***************************************************//
 
+//   load weights   ***************************************************//
+			if (layer == 10) begin
+				if(layer_init == 1'b1) begin
+					index1			= 0;
+					layer_init		= 1'b0;
+				end
+				else begin
+					if(index1  < denoise_output_bias_size) begin
+						bias[index1] = denoise_output_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < denoise_output_weights_size) begin
+						weights[index2] = denoise_output_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					if (index1_ready && index2_ready && index3_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						layer = 8;
+						layer_init = 1'b1;
+					end
+				end
+			end
 
+//   load weights   ***************************************************//
 
 //   dense3   ***************************************************//
-			if(layer == 7) begin
+			if(layer == 10) begin
 				// integer & reg initialize
 				if(layer_init == 1'b1) begin
 					nb_inputs		= denoise_gru_size;
@@ -1017,12 +1166,12 @@ module RNN(clk, rst, gains_out);
 				else begin
 					if(index1 < N) begin
 						if (index1_ready) begin
-							sum1			= denoise_output_bias[index1];
+							sum1			= bias[index1];
 							index1_ready	= 1'b0;
 							index2			= 0; 
 						end
 						if(index2 < M) begin
-							mul1_a			= denoise_output_weights[(index2*stride) + index1] * denoise_gru_state[index2];
+							mul1_a			= weights[(index2*stride) + index1] * denoise_gru_state[index2];
 							mul1_o			= mul1_a[47:16];
 							sum1			= sum1 + mul1_o;
 
@@ -1049,7 +1198,7 @@ module RNN(clk, rst, gains_out);
 					end
 					else begin	// index == N
 						layer_init	= 1'b1;
-						layer		= 8;
+						layer		= 11;
 						pass_start	= 1'b0;
 						index1 = 0;
 						index2 = 0;
@@ -1060,7 +1209,7 @@ module RNN(clk, rst, gains_out);
 //   dense3   ***************************************************//
 
 
-			if(layer == 8) begin
+			if(layer == 11) begin
 				if (index1 < gains_size) begin
 					gains_out = gains[index1];
 					index1 = index1 + 1;
