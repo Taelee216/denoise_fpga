@@ -51,7 +51,10 @@ module tanh_lut #(
                        //in the best case AW = N;
     parameter			DW = 32,
     parameter			N = 32,
-    parameter			Q = 16
+    parameter			Q = 16,
+    parameter fixed = 32,
+    parameter input_dense_bias_size	= 24,
+    	parameter	input_dense_weights_size			= 1008
     )(
     input				clk,
     input	[N-1:0]		phase,
@@ -64,23 +67,43 @@ module tanh_lut #(
 
 
     reg 	[AW-1:0]	addrb_reg;
+	//(* ram_style = "block" *)reg 		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];    
+  // (* ram_style = "block" *)reg signed		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
 
-    
-    (* ram_style = "block" *)reg [DW-1:0] mem [(1<<AW)-1:0];  
+  //  (* ram_style = "block" *)reg [DW-1:0] mem [(1<<AW)-1:0];  
 	//ram_style can be 'block' or 'distributed' based on the utilization and other requirements in the project
     initial 
     begin
-        $readmemb("tanh_fixed.mem", mem);
+        //$readmemb("tanh_fixed.mem", mem);
+        //$readmemb("input_dense_bias_fixed.mem",					input_dense_bias);
+        //$readmemb("input_dense_weights_fixed.mem",				input_dense_weights);
     end
+    
+    reg signed [9:0] tanh_in_a;
+    wire [31:0] tanh_out_a;
+    tanh_mem tanh_A(.addra(tanh_in_a), .clka(clk), .douta(tanh_out_a));
+    reg signed [9:0] tanh_in_b;
+    wire [31:0] tanh_out_b;
+    tanh_mem tanh_B(.addra(tanh_in_b), .clka(clk), .douta(tanh_out_b));
+    reg signed [31:0] in = 32'b0;
+    wire [31:0] vadgrubias; 
+     wire [31:0] noisegru; 
+    reg signed [31:0] out;
+    reg signed [31:0] out2;
+    vad_gru_bias_mem vad_gru_bias(clk, , in, ,vadgrubias);
+    noise_gru_input_weights_mem ngiw(.clka(clk), .addra(in), .douta(noisegru));
     
     always@(posedge clk)
     begin
-        addra_reg <= phase[17:8];
-        addrb_reg <= phase[17:8] + 1'b1;
+        tanh_in_a <= phase[17:8];
+        tanh_in_b <= phase[17:8] + 1'b1;
+        // in = in + 1;
+        out = vadgrubias;
+        out2 = noisegru;
     end
 
-    assign tanhb = mem[addrb_reg];
-    assign tanha = mem[addra_reg];
+    assign tanhb = tanh_out_b;
+    assign tanha = tanh_out_a;
     
     
     wire [31:0] frac,one_minus_frac;
@@ -98,4 +121,5 @@ module tanh_lut #(
     //now, if the phase input is above 3 or below -3 then we just output 1, otherwise we output the calculated value
     //we also check for the sign, if the phase is negative, we return 2's complemented version of the calculated value
     assign tanh = (phase [N-1]) ? (phase[N-14] ? (32'b11111111_11111111_00000000_00000000) : (~tanh_temp + 1'b1)) :(phase[N-14] ? (32'b00000000_00000001_00000000_00000000):(tanh_temp));
+    // assign tanh =  tanh_out_a;
 endmodule
