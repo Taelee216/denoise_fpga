@@ -271,8 +271,8 @@ module RNN(clk, rst, gains_out);
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < vad_gru_output_weights_size) begin
-						weights[index2] = vad_gru_output_weights_out;
+					if(index2 < vad_gru_input_weights_size) begin
+						weights[index2] = vad_gru_input_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
@@ -612,8 +612,8 @@ module RNN(clk, rst, gains_out);
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < noise_gru_weights_size) begin
-						weights[index2] = noise_gru_weights_out;
+					if(index2 < noise_gru_input_weights_size) begin
+						weights[index2] = noise_gru_input_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
