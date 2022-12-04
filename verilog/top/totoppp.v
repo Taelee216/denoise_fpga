@@ -1,3 +1,23 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2022/12/04 21:00:10
+// Design Name: 
+// Module Name: f
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 
 module RNN(clk, rst, gains_out);
 
@@ -1302,4 +1322,17 @@ module RNN(clk, rst, gains_out);
 			end
 		end
 	end
+endmodule
+
+module tb();
+    reg clk = 1'b0, rst = 1'b1;
+    wire [31:0]  oo;
+    
+    always #1000 clk = ~clk;
+
+    RNN ff(clk, rst, oo);
+    
+    initial begin
+        #2500 rst = 1'b0;
+    end
 endmodule
