@@ -1,3 +1,4 @@
+
 module RNN(clk, rst, gains_out);
 
 	parameter 	fixed 				= 32;
@@ -118,6 +119,23 @@ module RNN(clk, rst, gains_out);
 
 	reg signed		[	fixed-1 : 0]	layer;
 	reg signed							layer_init;
+	
+	integer cnt;
+	reg signed     [  4: 0]    in1;
+	reg signed     [9:0]   in2;
+	reg signed     [6:0]   in3;
+	reg signed     [10:0]   in4;
+	reg signed     [10:0]   in5;
+	reg signed     [0:0]   in6;
+	reg signed     [4:0]   in7;
+	reg signed     [7:0]   in8;
+	reg signed     [13:0]   in9;
+	reg signed     [12:0]   in10;
+	reg signed     [8:0]   in11;
+	reg signed     [15:0]   in12;
+	reg signed     [14:0]   in13;
+	reg signed     [4:0]   in14;
+	reg signed     [11:0]   in15;
 
 	wire			[	fixed-1 : 0]	input_dense_bias_out,	input_dense_weights_out;
 	wire			[	fixed-1 : 0]	vad_gru_bias_out,		vad_gru_input_weights_out,	vad_gru_recurrent_weights_out;
@@ -128,26 +146,26 @@ module RNN(clk, rst, gains_out);
 
 
 	//dense1
-	input_dense_bias_bram				input_dense_bias				(.clka(clk),	.addra(index1), .douta(input_dense_bias_out));
-	input_dense_weights_bram			input_dense_weights				(.clka(clk),	.addra(index2), .douta(input_dense_weights_out));
+	input_dense_bias_bram				input_dense_bias				(.clka(clk),	.addra(in1), .douta(input_dense_bias_out));
+	input_dense_weights_bram			input_dense_weights				(.clka(clk),	.addra(in2), .douta(input_dense_weights_out));
 	//gru1
-	vad_gru_bias_bram					vad_gru_bias					(.clka(clk),	.addra(index1), .douta(vad_gru_bias_out));
-	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk),	.addra(index2), .douta(vad_gru_input_weights_out));
-	vad_gru_recurrent_weights_bram		vad_gru_recurrent_weights		(.clka(clk),	.addra(index3),	.douta(vad_gru_recurrent_weights_out));
+	vad_gru_bias_bram					vad_gru_bias					(.clka(clk),	.addra(in3), .douta(vad_gru_bias_out));
+	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk),	.addra(in4), .douta(vad_gru_input_weights_out));
+	vad_gru_recurrent_weights_bram		vad_gru_recurrent_weights		(.clka(clk),	.addra(in5),	.douta(vad_gru_recurrent_weights_out));
 	//dense2
-	vad_output_bias_bram				vad_output_bias					(.clka(clk),	.addra(index1), .douta(vad_output_bias_out));
-	vad_output_weights_bram				vad_output_weights				(.clka(clk),	.addra(index2), .douta(vad_output_weights_out));
+	vad_output_bias_bram				vad_output_bias					(.clka(clk),	.addra(in6), .douta(vad_output_bias_out));
+	vad_output_weights_bram				vad_output_weights				(.clka(clk),	.addra(in7), .douta(vad_output_weights_out));
 	//gru2
-	noise_gru_bias_bram					noise_gru_bias					(.clka(clk),	.addra(index1),	.douta(noise_gru_bias_out));
-	noise_gru_input_weights_bram		noise_gru_input_weights			(.clka(clk),	.addra(index2),	.douta(noise_gru_input_weights_out));
-	noise_gru_recurrent_weights_bram	noise_gru_recurrent_weights		(.clka(clk),	.addra(index3),	.douta(noise_gru_recurrent_weights_out));
+	noise_gru_bias_bram					noise_gru_bias					(.clka(clk),	.addra(in8),	.douta(noise_gru_bias_out));
+	noise_gru_input_weights_bram		noise_gru_input_weights			(.clka(clk),	.addra(in9),	.douta(noise_gru_input_weights_out));
+	noise_gru_recurrent_weights_bram	noise_gru_recurrent_weights		(.clka(clk),	.addra(in10),	.douta(noise_gru_recurrent_weights_out));
 	//gru3
-	denoise_gru_bias_bram				denoise_gru_bias				(.clka(clk),	.addra(index1),	.douta(denoise_gru_bias_out));
-	denoise_gru_input_weights_bram		denoise_gru_input_weights		(.clka(clk),	.addra(index2),	.douta(denoise_gru_input_weights_out));
-	denoise_gru_recurrent_weights_bram	denoise_gru_recurrent_weights	(.clka(clk),	.addra(index3),	.douta(denoise_gru_recurrent_weights_out));
+	denoise_gru_bias_bram				denoise_gru_bias				(.clka(clk),	.addra(in11),	.douta(denoise_gru_bias_out));
+	denoise_gru_input_weights_bram		denoise_gru_input_weights		(.clka(clk),	.addra(in12),	.douta(denoise_gru_input_weights_out));
+	denoise_gru_recurrent_weights_bram	denoise_gru_recurrent_weights	(.clka(clk),	.addra(in13),	.douta(denoise_gru_recurrent_weights_out));
 	//dense3
-	denoise_output_bias_bram			denoise_output_bias				(.clka(clk),	.addra(index1), .douta(denoise_output_bias_out));
-	denoise_output_weights_bram			denoise_output_weights			(.clka(clk),	.addra(index2), .douta(denoise_output_weights_out));	
+	denoise_output_bias_bram			denoise_output_bias				(.clka(clk),	.addra(in14), .douta(denoise_output_bias_out));
+	denoise_output_weights_bram			denoise_output_weights			(.clka(clk),	.addra(in15), .douta(denoise_output_weights_out));	
 
 
 	always @ (posedge clk) begin
@@ -166,33 +184,44 @@ module RNN(clk, rst, gains_out);
 					index1			= 0;
 					index2			= 0;
 					layer_init		= 1'b0;
+					cnt = -3;
 				end
 				else begin
-					if(index1 < input_dense_bias_size) begin
-						bias[index1] = input_dense_bias_out;
-					end
-					else begin 
-						index1_ready = 1'b1;
-					end
-					if(index2 < input_dense_weights_size) begin
-						weights[index2] = input_dense_weights_out;
-					end
-					else begin
-						index2_ready = 1'b1;
-					end
-					if (index1_ready && index2_ready) begin
-						index1 = 0;
-						index2 = 0;
-						index1_ready = 1'b0;
-						index2_ready = 1'b0;
-						layer = 1;
-						layer_init = 1'b1;
-					end
-					else begin
-						index1 = index1+1;
-						index2 = index2+1;
-					end
-				end
+                    // if (cnt == 2'b00) begin
+                        if(index1 < input_dense_bias_size + 2) begin
+                            in1 = index1;
+                            bias[index1 - 2] = input_dense_bias_out;
+                        end
+                        else begin 
+                            index1_ready = 1'b1;
+                        end
+                        if(index2 < input_dense_weights_size + 2) begin
+                            in2 = index2;
+                            weights[index2 - 2] = input_dense_weights_out;
+                        end
+                        else begin
+                            index2_ready = 1'b1;
+                        end
+                        if (index1_ready && index2_ready) begin
+                            index1 = 0;
+                            index2 = 0;
+                            index1_ready = 1'b0;
+                            index2_ready = 1'b0;
+                            layer = 1;
+                            layer_init = 1'b1;
+                        end
+                        else begin
+                            index1 = index1+1;
+                            index2 = index2+1;
+                            cnt = cnt + 1;
+                        end
+                  //  end
+                   // else begin
+                      //  in1 = index1;
+                       // in2 = index2;
+                    //    cnt = cnt + 1;
+                   // end
+                end
 			end
 //   load weights   ***************************************************//
 				
@@ -272,20 +301,23 @@ module RNN(clk, rst, gains_out);
 					layer_init		= 1'b0;
 				end
 				else begin
-					if(index1  < vad_gru_bias_size) begin
-						bias[index1] = vad_gru_bias_out;
+					if(index1  < vad_gru_bias_size+2) begin
+					    in3 = index1;
+						bias[index1 -2] = vad_gru_bias_out;
 					end
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < vad_gru_input_weights_size) begin
-						weights[index2] = vad_gru_input_weights_out;
+					if(index2 < vad_gru_input_weights_size+2) begin
+					   in4 = index2;
+						weights[index2 -2] = vad_gru_input_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
 					end
-					if(index3 < vad_gru_recurrent_weights_size) begin
-						recurrent[index3] = vad_gru_recurrent_weights_out;
+					if(index3 < vad_gru_recurrent_weights_size+2 ) begin
+					   in5 = index3;
+						recurrent[index3 -2] = vad_gru_recurrent_weights_out;
 					end
 					else begin
 						index3_ready = 1'b1;
@@ -520,14 +552,16 @@ module RNN(clk, rst, gains_out);
 					layer_init		= 1'b0;
 				end
 				else begin
-					if(index1 < vad_output_bias_size) begin
-						bias[index1] = vad_output_bias_out;
+					if(index1 < vad_output_bias_size+2) begin
+					   in6 = index1;
+						bias[index1 -2] = vad_output_bias_out;
 					end
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < vad_output_weights_size) begin
-						weights[index2] = vad_output_weights_out;
+					if(index2 < vad_output_weights_size+2) begin
+					   in7 = index2;
+						weights[index2 -2] = vad_output_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
@@ -625,20 +659,23 @@ module RNN(clk, rst, gains_out);
 					layer_init		= 1'b0;
 				end
 				else begin
-					if(index1  < noise_gru_bias_size) begin
-						bias[index1] = noise_gru_bias_out;
+					if(index1  < noise_gru_bias_size+2) begin
+					in8 = index1;
+						bias[index1 -2] = noise_gru_bias_out;
 					end
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < noise_gru_input_weights_size) begin
-						weights[index2] = noise_gru_input_weights_out;
+					if(index2 < noise_gru_input_weights_size+2) begin
+					in9 = index2;
+						weights[index2 -2] = noise_gru_input_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
 					end
-					if(index3 < noise_gru_recurrent_weights_size) begin
-						recurrent[index3] = noise_gru_recurrent_weights_out;
+					if(index3 < noise_gru_recurrent_weights_size+2) begin
+					in10 = index3;
+						recurrent[index3 -2] = noise_gru_recurrent_weights_out;
 					end
 					else begin
 						index3_ready = 1'b1;
@@ -889,20 +926,23 @@ module RNN(clk, rst, gains_out);
 					layer_init		= 1'b0;
 				end
 				else begin
-					if(index1  < denoise_gru_bias_size) begin
-						bias[index1] = denoise_gru_bias_out;
+					if(index1  < denoise_gru_bias_size +2) begin
+					in11 = index1;
+						bias[index1 -2] = denoise_gru_bias_out;
 					end
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < denoise_gru_input_weights_size) begin
-						weights[index2] = denoise_gru_input_weights_out;
+					if(index2 < denoise_gru_input_weights_size +2) begin
+					in12 = index2;
+						weights[index2 -2] = denoise_gru_input_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
 					end
-					if(index3 < denoise_gru_recurrent_weights_size) begin
-						recurrent[index3] = denoise_gru_recurrent_weights_out;
+					if(index3 < denoise_gru_recurrent_weights_size +2) begin
+					in13 = index3;
+						recurrent[index3 -2] = denoise_gru_recurrent_weights_out;
 					end
 					else begin
 						index3_ready = 1'b1;
@@ -1152,19 +1192,21 @@ module RNN(clk, rst, gains_out);
 					layer_init		= 1'b0;
 				end
 				else begin
-					if(index1  < denoise_output_bias_size) begin
-						bias[index1] = denoise_output_bias_out;
+					if(index1  < denoise_output_bias_size+2) begin
+					in14 = index1;
+						bias[index1-2] = denoise_output_bias_out;
 					end
 					else begin 
 						index1_ready = 1'b1;
 					end
-					if(index2 < denoise_output_weights_size) begin
-						weights[index2] = denoise_output_weights_out;
+					if(index2 < denoise_output_weights_size+2) begin
+					in15 = index2;
+						weights[index2-2] = denoise_output_weights_out;
 					end
 					else begin
 						index2_ready = 1'b1;
 					end
-					if (index1_ready && index2_ready && index3_ready) begin
+					if (index1_ready && index2_ready) begin
 						index1 = 0;
 						index2 = 0;
 						index1_ready = 1'b0;
