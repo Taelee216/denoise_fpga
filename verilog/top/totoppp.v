@@ -55,25 +55,6 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	gains				[gains_size-1:0];
 	reg signed		[	fixed-1 : 0]	vad;
 
-	// reg signed		[	fixed-1 : 0]	input_dense_bias				[input_dense_bias_size-1:0];
-	// reg signed		[	fixed-1 : 0]	input_dense_weights				[input_dense_weights_size-1:0];
-	// reg signed		[	fixed-1 : 0]	vad_output_bias					[vad_output_bias_size-1:0];
-	// reg signed		[	fixed-1 : 0]	vad_output_weights				[vad_output_weights_size-1:0];
-	//reg signed		[	fixed-1 : 0]	denoise_output_bias				[denoise_output_bias_size-1:0];
-	//reg signed		[	fixed-1 : 0]	denoise_output_weights			[denoise_output_weights_size-1:0];
-
-	// reg signed		[	fixed-1 : 0]	vad_gru_bias					[vad_gru_bias_size-1:0];
-	// reg signed		[	fixed-1 : 0]	vad_gru_input_weights			[vad_gru_input_weights_size-1:0];
-	// reg signed		[	fixed-1 : 0]	vad_gru_recurrent_weights		[vad_gru_recurrent_weights_size-1:0];
-	
-	//reg signed		[	fixed-1 : 0]	noise_gru_bias					[noise_gru_bias_size-1:0];
-	//reg signed		[	fixed-1 : 0]	noise_gru_input_weights			[noise_gru_input_weights_size-1:0];
-	//reg signed		[	fixed-1 : 0]	noise_gru_recurrent_weights		[noise_gru_recurrent_weights_size-1:0];
-	
-	//reg signed		[	fixed-1 : 0]	denoise_gru_bias				[denoise_gru_bias_size-1:0];
-	//reg signed		[	fixed-1 : 0]	denoise_gru_input_weights		[denoise_gru_input_weights_size-1:0];
-	//reg signed		[	fixed-1 : 0]	denoise_gru_recurrent_weights	[denoise_gru_recurrent_weights_size-1:0];
-
 	reg signed		[	fixed-1 : 0]	vad_gru_state					[vad_gru_size-1:0];
 	reg signed		[	fixed-1 : 0]	noise_gru_state					[noise_gru_size-1:0];
 	reg signed		[	fixed-1 : 0]	denoise_gru_state				[denoise_gru_size-1:0];
@@ -95,24 +76,6 @@ module RNN(clk, rst, gains_out);
 		// input feature
 		$readmemb("feature_fixed.mem",							feature,						0, feature_size-1);
 		$readmemb("gain_fixed.mem", gains_read, 0, gains_size-1);
-		// dense layer
-		$readmemb("input_dense_bias_fixed.mem",					input_dense_bias, 				0, input_dense_bias_size-1);
-		$readmemb("input_dense_weights_fixed.mem",				input_dense_weights,			0, input_dense_weights_size-1);
-		$readmemb("vad_output_bias_fixed.mem",					vad_output_bias,				0, vad_output_bias_size-1);
-		$readmemb("vad_output_weights_fixed.mem",				vad_output_weights,				0, vad_output_weights_size-1);
-		$readmemb("denoise_output_bias_fixed.mem",				denoise_output_bias,			0, denoise_output_bias_size-1);
-		$readmemb("denoise_output_weights_fixed.mem",			denoise_output_weights,			0, denoise_output_weights_size-1);
-	
-		// gru layer
-		$readmemb("vad_gru_bias_fixed.mem",						vad_gru_bias,					0, vad_gru_bias_size-1);
-		$readmemb("vad_gru_input_weights_fixed.mem",			vad_gru_input_weights,			0, vad_gru_input_weights_size-1);
-		$readmemb("vad_gru_recurrent_weights_fixed.mem",		vad_gru_recurrent_weights,		0, vad_gru_recurrent_weights_size-1);
-		$readmemb("noise_gru_bias_fixed.mem",					noise_gru_bias,					0, noise_gru_bias_size-1);
-		$readmemb("noise_gru_input_weights_fixed.mem",			noise_gru_input_weights,		0, noise_gru_input_weights_size-1);
-		$readmemb("noise_gru_recurrent_weights_fixed.mem",		noise_gru_recurrent_weights,	0, noise_gru_recurrent_weights_size-1);
-		$readmemb("denoise_gru_bias_fixed.mem",					denoise_gru_bias,				0, denoise_gru_bias_size-1);
-		$readmemb("denoise_gru_input_weights_fixed.mem",		denoise_gru_input_weights,		0, denoise_gru_input_weights_size-1);
-		$readmemb("denoise_gru_recurrent_weights_fixed.mem",	denoise_gru_recurrent_weights,	0, denoise_gru_recurrent_weights_size-1);
 		$readmemb("tanh_fixed.mem", tanh_mem);
 	end
 	generate
