@@ -25,6 +25,7 @@ module RNN(clk, rst, gains_out);
 
 	parameter	feature_size		= 42;
 	parameter	gains_size			= 22;
+	parameter	feature_cnt			= 400;
 	
 	parameter	input_dense_size	= 24;
 	parameter 	vad_gru_size		= 24;
@@ -73,6 +74,7 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	tanh_mem [(1<<10)-1:0];  
 
 	reg signed		[	fixed-1 : 0]	feature				[feature_size-1:0];
+	reg signed		[	fixed-1 : 0]	feature_all			[(feature_size * feature_cnt)-1:0];
 	reg signed		[	fixed-1 : 0]	gains				[gains_size-1:0];
 	reg signed		[	fixed-1 : 0]	vad;
 
@@ -84,19 +86,20 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	noise_input						[noise_input_size-1:0];
 	reg signed		[	fixed-1 : 0]	denoise_input					[denoise_input_size-1:0];
 	
-	reg signed		[   fixed-1 : 0]	gains_read						[gains_size-1:0];
+	// reg signed		[   fixed-1 : 0]	gains_read						[gains_size-1:0];
 
 
 	//for new 
-	reg signed		[	fixed-1 : 0]	bias							[287:0];
-	reg signed		[	fixed-1 : 0]	weights							[32831:0];
-	reg signed		[	fixed-1 : 0]	recurrent						[27647:0];
+	reg signed		[	fixed-1 : 0]	bias							[denoise_gru_bias_size - 1:0];
+	reg signed		[	fixed-1 : 0]	weights							[denoise_gru_input_weights_size - 1:0];
+	reg signed		[	fixed-1 : 0]	recurrent						[denoise_gru_recurrent_weights_size - 1:0];
 
 	// mem read
 	initial begin
 		// input feature
-		$readmemb("feature_fixed.mem",							feature,						0, feature_size-1);
-		$readmemb("gain_fixed.mem", gains_read, 0, gains_size-1);
+		$readmemb("feature_fixed.mem", feature, 0, feature_size-1);
+		// $readmemb("feature_fixed_all.mem", feature, 0, (feature_size * feature_cnt) - 1);
+		// $readmemb("gain_fixed.mem", gains_read, 0, gains_size-1);
 		$readmemb("tanh_fixed.mem", tanh_mem);
 	end
 	generate
@@ -139,23 +142,24 @@ module RNN(clk, rst, gains_out);
 
 	reg signed		[	fixed-1 : 0]	layer;
 	reg signed							layer_init;
+
+	integer								feature_input_count = 0;
 	
-	integer cnt;
-	reg signed     [  4: 0]    in1;
-	reg signed     [9:0]   in2;
-	reg signed     [6:0]   in3;
-	reg signed     [10:0]   in4;
-	reg signed     [10:0]   in5;
-	reg signed     [0:0]   in6;
-	reg signed     [4:0]   in7;
-	reg signed     [7:0]   in8;
-	reg signed     [13:0]   in9;
-	reg signed     [12:0]   in10;
-	reg signed     [8:0]   in11;
-	reg signed     [15:0]   in12;
-	reg signed     [14:0]   in13;
-	reg signed     [4:0]   in14;
-	reg signed     [11:0]   in15;
+	reg signed		[ 4:0]	in1;
+	reg signed		[ 9:0]	in2;
+	reg signed		[ 6:0]	in3;
+	reg signed		[10:0]	in4;
+	reg signed		[10:0]	in5;
+	reg signed		[ 0:0]	in6;
+	reg signed		[ 4:0]	in7;
+	reg signed		[ 7:0]	in8;
+	reg signed		[13:0]	in9;
+	reg signed		[12:0]	in10;
+	reg signed		[ 8:0]	in11;
+	reg signed		[15:0]	in12;
+	reg signed		[14:0]	in13;
+	reg signed		[ 4:0]	in14;
+	reg signed		[11:0]	in15;
 
 	wire			[	fixed-1 : 0]	input_dense_bias_out,	input_dense_weights_out;
 	wire			[	fixed-1 : 0]	vad_gru_bias_out,		vad_gru_input_weights_out,	vad_gru_recurrent_weights_out;
@@ -163,39 +167,39 @@ module RNN(clk, rst, gains_out);
 	wire			[	fixed-1 : 0]	noise_gru_bias_out,		noise_gru_input_weights_out,	noise_gru_recurrent_weights_out;
 	wire			[	fixed-1 : 0]	denoise_gru_bias_out,	denoise_gru_input_weights_out,	denoise_gru_recurrent_weights_out;
 	wire			[	fixed-1 : 0]	denoise_output_bias_out,	denoise_output_weights_out;
+	wire			[	fixed-1 : 0]	dina;
 
 
 	//dense1
-	input_dense_bias_bram				input_dense_bias				(.clka(clk),	.addra(in1), .douta(input_dense_bias_out));
-	input_dense_weights_bram			input_dense_weights				(.clka(clk),	.addra(in2), .douta(input_dense_weights_out));
+	input_dense_bias_bram				input_dense_bias				(.clka(clk), .wea(0), .addra(in1),  .dina(dina), .douta(input_dense_bias_out));
+	input_dense_weights_bram			input_dense_weights				(.clka(clk), .wea(0), .addra(in2),  .dina(dina), .douta(input_dense_weights_out));
 	//gru1
-	vad_gru_bias_bram					vad_gru_bias					(.clka(clk),	.addra(in3), .douta(vad_gru_bias_out));
-	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk),	.addra(in4), .douta(vad_gru_input_weights_out));
-	vad_gru_recurrent_weights_bram		vad_gru_recurrent_weights		(.clka(clk),	.addra(in5),	.douta(vad_gru_recurrent_weights_out));
+	vad_gru_bias_bram					vad_gru_bias					(.clka(clk), .wea(0), .addra(in3),  .dina(dina), .douta(vad_gru_bias_out));
+	vad_gru_input_weights_bram			vad_gru_input_weights			(.clka(clk), .wea(0), .addra(in4),  .dina(dina), .douta(vad_gru_input_weights_out));
+	vad_gru_recurrent_weights_bram		vad_gru_recurrent_weights		(.clka(clk), .wea(0), .addra(in5),  .dina(dina), .douta(vad_gru_recurrent_weights_out));
 	//dense2
-	vad_output_bias_bram				vad_output_bias					(.clka(clk),	.addra(in6), .douta(vad_output_bias_out));
-	vad_output_weights_bram				vad_output_weights				(.clka(clk),	.addra(in7), .douta(vad_output_weights_out));
+	vad_output_bias_bram				vad_output_bias					(.clka(clk), .wea(0), .addra(in6),  .dina(dina), .douta(vad_output_bias_out));
+	vad_output_weights_bram				vad_output_weights				(.clka(clk), .wea(0), .addra(in7),  .dina(dina), .douta(vad_output_weights_out));
 	//gru2
-	noise_gru_bias_bram					noise_gru_bias					(.clka(clk),	.addra(in8),	.douta(noise_gru_bias_out));
-	noise_gru_input_weights_bram		noise_gru_input_weights			(.clka(clk),	.addra(in9),	.douta(noise_gru_input_weights_out));
-	noise_gru_recurrent_weights_bram	noise_gru_recurrent_weights		(.clka(clk),	.addra(in10),	.douta(noise_gru_recurrent_weights_out));
+	noise_gru_bias_bram					noise_gru_bias					(.clka(clk), .wea(0), .addra(in8),  .dina(dina), .douta(noise_gru_bias_out));
+	noise_gru_input_weights_bram		noise_gru_input_weights			(.clka(clk), .wea(0), .addra(in9),  .dina(dina), .douta(noise_gru_input_weights_out));
+	noise_gru_recurrent_weights_bram	noise_gru_recurrent_weights		(.clka(clk), .wea(0), .addra(in10), .dina(dina), .douta(noise_gru_recurrent_weights_out));
 	//gru3
-	denoise_gru_bias_bram				denoise_gru_bias				(.clka(clk),	.addra(in11),	.douta(denoise_gru_bias_out));
-	denoise_gru_input_weights_bram		denoise_gru_input_weights		(.clka(clk),	.addra(in12),	.douta(denoise_gru_input_weights_out));
-	denoise_gru_recurrent_weights_bram	denoise_gru_recurrent_weights	(.clka(clk),	.addra(in13),	.douta(denoise_gru_recurrent_weights_out));
+	denoise_gru_bias_bram				denoise_gru_bias				(.clka(clk), .wea(0), .addra(in11), .dina(dina), .douta(denoise_gru_bias_out));
+	denoise_gru_input_weights_bram		denoise_gru_input_weights		(.clka(clk), .wea(0), .addra(in12), .dina(dina), .douta(denoise_gru_input_weights_out));
+	denoise_gru_recurrent_weights_bram	denoise_gru_recurrent_weights	(.clka(clk), .wea(0), .addra(in13), .dina(dina), .douta(denoise_gru_recurrent_weights_out));
 	//dense3
-	denoise_output_bias_bram			denoise_output_bias				(.clka(clk),	.addra(in14), .douta(denoise_output_bias_out));
-	denoise_output_weights_bram			denoise_output_weights			(.clka(clk),	.addra(in15), .douta(denoise_output_weights_out));	
+	denoise_output_bias_bram			denoise_output_bias				(.clka(clk), .wea(0), .addra(in14), .dina(dina), .douta(denoise_output_bias_out));
+	denoise_output_weights_bram			denoise_output_weights			(.clka(clk), .wea(0), .addra(in15), .dina(dina), .douta(denoise_output_weights_out));	
 
 
 	always @ (posedge clk) begin
 		if(rst == 1'b1) begin
 			layer = 0;
 			layer_init = 1'b1;
+			// feature_input_count = 0;
 		end
 		
-		
-	
 		if(rst == 1'b0) begin
 			
 //   load weights   ***************************************************//
@@ -204,43 +208,43 @@ module RNN(clk, rst, gains_out);
 					index1			= 0;
 					index2			= 0;
 					layer_init		= 1'b0;
-					cnt = -3;
 				end
 				else begin
-                    // if (cnt == 2'b00) begin
-                        if(index1 < input_dense_bias_size + 2) begin
-                            in1 = index1;
-                            bias[index1 - 2] = input_dense_bias_out;
-                        end
-                        else begin 
-                            index1_ready = 1'b1;
-                        end
-                        if(index2 < input_dense_weights_size + 2) begin
-                            in2 = index2;
-                            weights[index2 - 2] = input_dense_weights_out;
-                        end
-                        else begin
-                            index2_ready = 1'b1;
-                        end
-                        if (index1_ready && index2_ready) begin
-                            index1 = 0;
-                            index2 = 0;
-                            index1_ready = 1'b0;
-                            index2_ready = 1'b0;
-                            layer = 1;
-                            layer_init = 1'b1;
-                        end
-                        else begin
-                            index1 = index1+1;
-                            index2 = index2+1;
-                            cnt = cnt + 1;
-                        end
-                  //  end
-                   // else begin
-                      //  in1 = index1;
-                       // in2 = index2;
-                    //    cnt = cnt + 1;
-                   // end
+					if(index1 < input_dense_bias_size + 2) begin
+						in1 = index1;
+						bias[index1 - 2] = input_dense_bias_out;
+					end
+					else begin 
+						index1_ready = 1'b1;
+					end
+					if(index2 < input_dense_weights_size + 2) begin
+						in2 = index2;
+						weights[index2 - 2] = input_dense_weights_out;
+					end
+					else begin
+						index2_ready = 1'b1;
+					end
+					/*
+					if(index3 < feature_size) begin
+						feature[index3] = feature[(feature_input_count * fixed) + index3]
+					end
+					else begin
+						index3_ready = 1'b1;
+					end
+					*/
+					if (index1_ready && index2_ready) begin
+						index1 = 0;
+						index2 = 0;
+						index1_ready = 1'b0;
+						index2_ready = 1'b0;
+						layer = 1;
+						layer_init = 1'b1;
+						// feature_input_count = feature_input_count + 1;
+					end
+					else begin
+						index1 = index1+1;
+						index2 = index2+1;
+					end
                 end
 			end
 //   load weights   ***************************************************//
@@ -1318,6 +1322,12 @@ module RNN(clk, rst, gains_out);
 				end
 				else begin
 					gains_out = 32'b0;
+					layer_init			= 1'b1;
+					layer				= 0;
+					pass_start			= 1'b0;
+					index1 = 0;
+					index2 = 0;
+					index3 = 0;
 				end
 			end
 		end
