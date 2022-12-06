@@ -11006,7 +11006,7 @@ void out_float(float f) {
 		}
 		p--;
 	}
-	for (i = 0 ; i< 32 ; i++) fprintf(f_out, "%d", tmp[i]);
+	for (i = 0 ; i < 32 ; i++) fprintf(f_out, "%d", tmp[i]);
 }
 
 int main() {

@@ -11077,7 +11077,7 @@ void out_fixed(fixed_point_t f) {
 		p--;
 	}
 	// for (i = 0 ; i< 16 ; i++) fprintf(f_out, "%d", tmp[i]);
-    for (i = 0 ; i < 32 ; i++) fprintf(f_out, "%d", tmp[i]);
+    for (i = 8 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
 }
 
 
@@ -11250,7 +11250,7 @@ int main() {
 	fclose(f_out);
 
 /////////////////////////////////////////////////////////////////////////// vad_output_weights
-	f_out = fopen("vad_output_weights.mem", "w");
+	f_out = fopen("vad_output_weights_fixed.mem", "w");
 	size = sizeof(vad_output_weights) / sizeof(vad_output_weights[0]);
 	for (int i = 0; i < size; i++) {
 		// fprintf(f_out, "assign\tvad_output_weights_array[%5d] = 32'b", i);
