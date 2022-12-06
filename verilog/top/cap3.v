@@ -151,7 +151,6 @@ module RNN(clk, rst, gains_out);
 
 	reg signed		[	fixed-1 : 0]	z[MAX_NEURONS-1:0];
 	reg signed		[	fixed-1 : 0]	r[MAX_NEURONS-1:0];
-	reg signed		[	fixed-1 : 0]	h[MAX_NEURONS-1:0];
 	reg signed		[	fixed-1 : 0]	sum1, sum2, sum3;
 
 	reg signed		[ 2*fixed-1 : 0]	mul1_a=0, mul1_b=0;
@@ -411,7 +410,7 @@ module RNN(clk, rst, gains_out);
 								mul4_a			= z[index1] * vad_gru_state[index1];
 								mul4_b			= (ONE - z[index1]) * mul2_o;
 
-								h[index1]		= mul4_a[47:16] + mul4_b[47:16];
+								vad_gru_state[index1]		= mul4_a[47:16] + mul4_b[47:16];
 
 								index1			= index1 + 1; 
 
@@ -423,18 +422,12 @@ module RNN(clk, rst, gains_out);
 							end
 						end
 						else begin
-							if(index3 < N) begin
-								vad_gru_state[index3] = h[index3];
-								index3				= index3 + 1;
-							end
-							else begin
-								layer_init			= 1'b1;
-								layer				= 2;
-								pass_start			= 1'b0;
-								index1 = 0;
-								index2 = 0;
-								index3 = 0;
-							end
+							layer_init			= 1'b1;
+							layer				= 2;
+							pass_start			= 1'b0;
+							index1 = 0;
+							index2 = 0;
+							index3 = 0;
 						end
 					end
 				end
@@ -691,7 +684,7 @@ module RNN(clk, rst, gains_out);
 								mul4_a			= z[index1] * noise_gru_state[index1];
 								mul4_b			= (ONE - z[index1]) * mul2_o;
 
-								h[index1]		= mul4_a[47:16] + mul4_b[47:16];
+								noise_gru_state[index1]		= mul4_a[47:16] + mul4_b[47:16];
 
 								index1			= index1 + 1;
 
@@ -703,18 +696,12 @@ module RNN(clk, rst, gains_out);
 							end
 						end
 						else begin
-							if(index3 < N) begin
-								noise_gru_state[index3] = h[index3];
-								index3				= index3 + 1;
-							end
-							else begin
-								layer_init			= 1'b1;
-								layer				= 5;
-								pass_start			= 1'b0;
-								index1 = 0;
-								index2 = 0;
-								index3 = 0;
-							end
+							layer_init			= 1'b1;
+							layer				= 5;
+							pass_start			= 1'b0;
+							index1 = 0;
+							index2 = 0;
+							index3 = 0;
 						end
 					end
 				end
@@ -898,7 +885,7 @@ module RNN(clk, rst, gains_out);
 								mul4_a			= z[index1] * denoise_gru_state[index1];
 								mul4_b			= (ONE - z[index1]) * mul2_o;
 
-								h[index1]		= mul4_a[47:16] + mul4_b[47:16];
+								denoise_gru_state[index1]		= mul4_a[47:16] + mul4_b[47:16];
 
 								index1			= index1 + 1;
 
@@ -910,18 +897,12 @@ module RNN(clk, rst, gains_out);
 							end
 						end
 						else begin
-							if(index3 < N) begin
-								denoise_gru_state[index3] = h[index3];
-								index3				= index3 + 1;
-							end
-							else begin
-								layer_init			= 1'b1;
-								layer				= 7;
-								pass_start			= 1'b0;
-								index1 = 0;
-								index2 = 0;
-								index3 = 0;
-							end
+							layer_init			= 1'b1;
+							layer				= 7;
+							pass_start			= 1'b0;
+							index1 = 0;
+							index2 = 0;
+							index3 = 0;
 						end
 					end
 				end
