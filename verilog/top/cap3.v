@@ -86,9 +86,13 @@ module RNN(clk, rst, gains_out);
 	reg signed		[	fixed-1 : 0]	denoise_gru_state				[denoise_gru_size-1:0];
 
 	// 
+	// reg signed		[	fixed-1 : 0]	dense_out						[dense_out_size-1:0];
+	// reg signed		[	fixed-1 : 0]	noise_input						[noise_input_size-1:0];
+	// reg signed		[	fixed-1 : 0]	denoise_input					[denoise_input_size-1:0];
+
 	reg signed		[	fixed-1 : 0]	dense_out						[dense_out_size-1:0];
-	reg signed		[	fixed-1 : 0]	noise_input						[noise_input_size-1:0];
-	reg signed		[	fixed-1 : 0]	denoise_input					[denoise_input_size-1:0];
+	wire signed		[	fixed-1 : 0]	noise_input						[noise_input_size-1:0];
+	wire signed		[	fixed-1 : 0]	denoise_input					[denoise_input_size-1:0];
 	
 	reg signed		[   fixed-1 : 0]	gains_read						[gains_size-1:0];
 
@@ -168,6 +172,213 @@ module RNN(clk, rst, gains_out);
 
 	reg signed		[	fixed-1 : 0]	tmp1, tmp2, tmp3;
 	
+		assign noise_input[0] = dense_out[0];
+		assign noise_input[1] = dense_out[1];
+		assign noise_input[2] = dense_out[2];
+		assign noise_input[3] = dense_out[3];
+		assign noise_input[4] = dense_out[4];
+		assign noise_input[5] = dense_out[5];
+		assign noise_input[6] = dense_out[6];
+		assign noise_input[7] = dense_out[7];
+		assign noise_input[8] = dense_out[8];
+		assign noise_input[9] = dense_out[9];
+		assign noise_input[10] = dense_out[10];
+		assign noise_input[11] = dense_out[11];
+		assign noise_input[12] = dense_out[12];
+		assign noise_input[13] = dense_out[13];
+		assign noise_input[14] = dense_out[14];
+		assign noise_input[15] = dense_out[15];
+		assign noise_input[16] = dense_out[16];
+		assign noise_input[17] = dense_out[17];
+		assign noise_input[18] = dense_out[18];
+		assign noise_input[19] = dense_out[19];
+		assign noise_input[20] = dense_out[20];
+		assign noise_input[21] = dense_out[21];
+		assign noise_input[22] = dense_out[22];
+		assign noise_input[23] = dense_out[23];
+		assign noise_input[24] = vad_gru_state[0];
+		assign noise_input[25] = vad_gru_state[1];
+		assign noise_input[26] = vad_gru_state[2];
+		assign noise_input[27] = vad_gru_state[3];
+		assign noise_input[28] = vad_gru_state[4];
+		assign noise_input[29] = vad_gru_state[5];
+		assign noise_input[30] = vad_gru_state[6];
+		assign noise_input[31] = vad_gru_state[7];
+		assign noise_input[32] = vad_gru_state[8];
+		assign noise_input[33] = vad_gru_state[9];
+		assign noise_input[34] = vad_gru_state[10];
+		assign noise_input[35] = vad_gru_state[11];
+		assign noise_input[36] = vad_gru_state[12];
+		assign noise_input[37] = vad_gru_state[13];
+		assign noise_input[38] = vad_gru_state[14];
+		assign noise_input[39] = vad_gru_state[15];
+		assign noise_input[40] = vad_gru_state[16];
+		assign noise_input[41] = vad_gru_state[17];
+		assign noise_input[42] = vad_gru_state[18];
+		assign noise_input[43] = vad_gru_state[19];
+		assign noise_input[44] = vad_gru_state[20];
+		assign noise_input[45] = vad_gru_state[21];
+		assign noise_input[46] = vad_gru_state[22];
+		assign noise_input[47] = vad_gru_state[23];
+		assign noise_input[48] = feature[0];
+		assign noise_input[49] = feature[1];
+		assign noise_input[50] = feature[2];
+		assign noise_input[51] = feature[3];
+		assign noise_input[52] = feature[4];
+		assign noise_input[53] = feature[5];
+		assign noise_input[54] = feature[6];
+		assign noise_input[55] = feature[7];
+		assign noise_input[56] = feature[8];
+		assign noise_input[57] = feature[9];
+		assign noise_input[58] = feature[10];
+		assign noise_input[59] = feature[11];
+		assign noise_input[60] = feature[12];
+		assign noise_input[61] = feature[13];
+		assign noise_input[62] = feature[14];
+		assign noise_input[63] = feature[15];
+		assign noise_input[64] = feature[16];
+		assign noise_input[65] = feature[17];
+		assign noise_input[66] = feature[18];
+		assign noise_input[67] = feature[19];
+		assign noise_input[68] = feature[20];
+		assign noise_input[69] = feature[21];
+		assign noise_input[70] = feature[22];
+		assign noise_input[71] = feature[23];
+		assign noise_input[72] = feature[24];
+		assign noise_input[73] = feature[25];
+		assign noise_input[74] = feature[26];
+		assign noise_input[75] = feature[27];
+		assign noise_input[76] = feature[28];
+		assign noise_input[77] = feature[29];
+		assign noise_input[78] = feature[30];
+		assign noise_input[79] = feature[31];
+		assign noise_input[80] = feature[32];
+		assign noise_input[81] = feature[33];
+		assign noise_input[82] = feature[34];
+		assign noise_input[83] = feature[35];
+		assign noise_input[84] = feature[36];
+		assign noise_input[85] = feature[37];
+		assign noise_input[86] = feature[38];
+		assign noise_input[87] = feature[39];
+		assign noise_input[88] = feature[40];
+		assign noise_input[89] = feature[41];
+		assign denoise_input[0] = vad_gru_state[0];
+		assign denoise_input[1] = vad_gru_state[1];
+		assign denoise_input[2] = vad_gru_state[2];
+		assign denoise_input[3] = vad_gru_state[3];
+		assign denoise_input[4] = vad_gru_state[4];
+		assign denoise_input[5] = vad_gru_state[5];
+		assign denoise_input[6] = vad_gru_state[6];
+		assign denoise_input[7] = vad_gru_state[7];
+		assign denoise_input[8] = vad_gru_state[8];
+		assign denoise_input[9] = vad_gru_state[9];
+		assign denoise_input[10] = vad_gru_state[10];
+		assign denoise_input[11] = vad_gru_state[11];
+		assign denoise_input[12] = vad_gru_state[12];
+		assign denoise_input[13] = vad_gru_state[13];
+		assign denoise_input[14] = vad_gru_state[14];
+		assign denoise_input[15] = vad_gru_state[15];
+		assign denoise_input[16] = vad_gru_state[16];
+		assign denoise_input[17] = vad_gru_state[17];
+		assign denoise_input[18] = vad_gru_state[18];
+		assign denoise_input[19] = vad_gru_state[19];
+		assign denoise_input[20] = vad_gru_state[20];
+		assign denoise_input[21] = vad_gru_state[21];
+		assign denoise_input[22] = vad_gru_state[22];
+		assign denoise_input[23] = vad_gru_state[23];
+		assign denoise_input[24] = noise_gru_state[0];
+		assign denoise_input[25] = noise_gru_state[1];
+		assign denoise_input[26] = noise_gru_state[2];
+		assign denoise_input[27] = noise_gru_state[3];
+		assign denoise_input[28] = noise_gru_state[4];
+		assign denoise_input[29] = noise_gru_state[5];
+		assign denoise_input[30] = noise_gru_state[6];
+		assign denoise_input[31] = noise_gru_state[7];
+		assign denoise_input[32] = noise_gru_state[8];
+		assign denoise_input[33] = noise_gru_state[9];
+		assign denoise_input[34] = noise_gru_state[10];
+		assign denoise_input[35] = noise_gru_state[11];
+		assign denoise_input[36] = noise_gru_state[12];
+		assign denoise_input[37] = noise_gru_state[13];
+		assign denoise_input[38] = noise_gru_state[14];
+		assign denoise_input[39] = noise_gru_state[15];
+		assign denoise_input[40] = noise_gru_state[16];
+		assign denoise_input[41] = noise_gru_state[17];
+		assign denoise_input[42] = noise_gru_state[18];
+		assign denoise_input[43] = noise_gru_state[19];
+		assign denoise_input[44] = noise_gru_state[20];
+		assign denoise_input[45] = noise_gru_state[21];
+		assign denoise_input[46] = noise_gru_state[22];
+		assign denoise_input[47] = noise_gru_state[23];
+		assign denoise_input[48] = noise_gru_state[24];
+		assign denoise_input[49] = noise_gru_state[25];
+		assign denoise_input[50] = noise_gru_state[26];
+		assign denoise_input[51] = noise_gru_state[27];
+		assign denoise_input[52] = noise_gru_state[28];
+		assign denoise_input[53] = noise_gru_state[29];
+		assign denoise_input[54] = noise_gru_state[30];
+		assign denoise_input[55] = noise_gru_state[31];
+		assign denoise_input[56] = noise_gru_state[32];
+		assign denoise_input[57] = noise_gru_state[33];
+		assign denoise_input[58] = noise_gru_state[34];
+		assign denoise_input[59] = noise_gru_state[35];
+		assign denoise_input[60] = noise_gru_state[36];
+		assign denoise_input[61] = noise_gru_state[37];
+		assign denoise_input[62] = noise_gru_state[38];
+		assign denoise_input[63] = noise_gru_state[39];
+		assign denoise_input[64] = noise_gru_state[40];
+		assign denoise_input[65] = noise_gru_state[41];
+		assign denoise_input[66] = noise_gru_state[42];
+		assign denoise_input[67] = noise_gru_state[43];
+		assign denoise_input[68] = noise_gru_state[44];
+		assign denoise_input[69] = noise_gru_state[45];
+		assign denoise_input[70] = noise_gru_state[46];
+		assign denoise_input[71] = noise_gru_state[47];
+		assign denoise_input[72] = feature[0];
+		assign denoise_input[73] = feature[1];
+		assign denoise_input[74] = feature[2];
+		assign denoise_input[75] = feature[3];
+		assign denoise_input[76] = feature[4];
+		assign denoise_input[77] = feature[5];
+		assign denoise_input[78] = feature[6];
+		assign denoise_input[79] = feature[7];
+		assign denoise_input[80] = feature[8];
+		assign denoise_input[81] = feature[9];
+		assign denoise_input[82] = feature[10];
+		assign denoise_input[83] = feature[11];
+		assign denoise_input[84] = feature[12];
+		assign denoise_input[85] = feature[13];
+		assign denoise_input[86] = feature[14];
+		assign denoise_input[87] = feature[15];
+		assign denoise_input[88] = feature[16];
+		assign denoise_input[89] = feature[17];
+		assign denoise_input[90] = feature[18];
+		assign denoise_input[91] = feature[19];
+		assign denoise_input[92] = feature[20];
+		assign denoise_input[93] = feature[21];
+		assign denoise_input[94] = feature[22];
+		assign denoise_input[95] = feature[23];
+		assign denoise_input[96] = feature[24];
+		assign denoise_input[97] = feature[25];
+		assign denoise_input[98] = feature[26];
+		assign denoise_input[99] = feature[27];
+		assign denoise_input[100] = feature[28];
+		assign denoise_input[101] = feature[29];
+		assign denoise_input[102] = feature[30];
+		assign denoise_input[103] = feature[31];
+		assign denoise_input[104] = feature[32];
+		assign denoise_input[105] = feature[33];
+		assign denoise_input[106] = feature[34];
+		assign denoise_input[107] = feature[35];
+		assign denoise_input[108] = feature[36];
+		assign denoise_input[109] = feature[37];
+		assign denoise_input[110] = feature[38];
+		assign denoise_input[111] = feature[39];
+		assign denoise_input[112] = feature[40];
+		assign denoise_input[113] = feature[41];
+
+
+
 	always @ (posedge clk) begin
 		if(rst == 1'b1) begin
 			layer = 0;
@@ -508,6 +719,7 @@ module RNN(clk, rst, gains_out);
 
 
 			if(layer == 3) begin 
+				/*
 				if(index1 < input_dense_size) begin
 					noise_input[index1] = dense_out[index1];
 					index1 = index1 + 1;
@@ -521,9 +733,10 @@ module RNN(clk, rst, gains_out);
 					index1 = index1 + 1;
 				end
 				else begin
+				*/
 					layer		= 4;
 					index1 = 0;
-				end
+				// end
 			end
 
 
@@ -710,6 +923,7 @@ module RNN(clk, rst, gains_out);
 
 
 			if(layer == 5) begin 
+				/*
 				if(index1 < vad_gru_size) begin
 					denoise_input[index1] = vad_gru_state[index1];
 					index1 = index1 + 1;
@@ -723,9 +937,10 @@ module RNN(clk, rst, gains_out);
 					index1 = index1 + 1;
 				end
 				else begin
+				*/
 					layer		=6;
 					index1 = 0;
-				end
+				// end
 			end
 
 
