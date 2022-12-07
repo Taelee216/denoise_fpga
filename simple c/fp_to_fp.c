@@ -11047,9 +11047,9 @@ FILE *f_out;
 
 
 
-#define FIXED_POINT_FRACTIONAL_BITS 16
+#define FIXED_POINT_FRACTIONAL_BITS 8
 
-typedef uint32_t fixed_point_t;
+typedef uint16_t fixed_point_t;
 
 double fixed_to_double(fixed_point_t input);
 fixed_point_t double_to_fixed(double input);
@@ -11077,7 +11077,7 @@ void out_fixed(fixed_point_t f) {
 		p--;
 	}
 	// for (i = 0 ; i< 16 ; i++) fprintf(f_out, "%d", tmp[i]);
-    for (i = 8 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
+    for (i = 0 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
 }
 
 

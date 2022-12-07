@@ -157,10 +157,13 @@ void compute_dense(const DenseLayer *layer, float *output, const float *input) {
 	for ( i = 0; i < N; i++ ) {
 		/* Compute update gate. */
 		float sum = layer->bias[i];
+		if (i == 21) printf("%d: sum : %lf \n", i, sum/256);
 		for (j=0;j<M;j++) {
 			sum += layer->input_weights[j*stride + i]*input[j];
+			if (i == 21) printf("%d: sum : %lf \n", i, sum/256);
 		}
 		output[i] = WEIGHTS_SCALE*sum;
+		printf("output[%d] = WEIGHTS_SCALE*sum : %lf \n", i, output[i]);
 	}
 
 	if (layer->activation == ACTIVATION_SIGMOID) {
