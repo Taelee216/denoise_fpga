@@ -60,7 +60,8 @@ module RNN(clk, rst, gains_out);
 	reg signed		[ sixteen-1 : 0]	tanh_mem [(1<<10)-1:0];  
 	
 	// I/O
-	reg signed		[ sixteen-1 : 0]	feature				[feature_size-1:0];
+	// reg signed		[ sixteen-1 : 0]	feature				[feature_size-1:0];
+	reg signed		[ sixteen-1 : 0]	feature_full		[16800-1:0];
 	reg signed		[ sixteen-1 : 0]	gains				[gains_size-1:0];
 	reg signed		[ sixteen-1 : 0]	vad;
 
@@ -99,14 +100,17 @@ module RNN(clk, rst, gains_out);
 
 	reg signed		[ sixteen-1 : 0]	gains_read						[gains_size-1:0];
 
+	integer			counter;
+
 	// mem read
 	initial begin
-		// fixed32
+		// fixed16?
 
 		// input feature
-		$readmemb("feature_fixed.mem",							feature,						0, feature_size-1);
+		// $readmemb("feature_fixed.mem",							feature,						0, feature_size-1);
+		$readmemb("features_fixed_linux.mem",					feature_full, 0, 16800 -1);
 		$readmemb("gain_fixed.mem",                             gains_read,                     0, gains_size-1);
-
+		counter = 0;
 		// tan
 		$readmemb("tanh_fixed_8_8.mem", tanh_mem);
 
@@ -161,12 +165,11 @@ module RNN(clk, rst, gains_out);
 	reg signed		[ sixteen-1 : 0]	z[MAX_NEURONS-1:0];
 	reg signed		[ sixteen-1 : 0]	r[MAX_NEURONS-1:0];
 	reg signed		[ sixteen-1 : 0]	h[MAX_NEURONS-1:0];
-	reg signed		[ sixteen-1 : 0]	sum1, sum2, sum3;
+	reg signed		[ sixteen-1 : 0]	sum1, sum2;
 
-	reg signed		[    full-1 : 0]	mul1_a=0, mul1_b=0;
-	reg signed		[    full-1 : 0]	mul2_a=0, mul2_b=0;
-	reg signed		[    full-1 : 0]	mul3_a=0, mul3_b=0, mul3_c=0;
-	reg signed		[    full-1 : 0]	mul4_a=0, mul4_b=0, mul4_c=0;
+	reg signed		[    full-1 : 0]	mul1_a=0;
+	reg signed		[    full-1 : 0]	mul3_a=0, mul3_b=0;
+	reg signed		[    full-1 : 0]	mul4_a=0, mul4_b=0;
 	reg signed		[ sixteen-1 : 0]	mul1_i=0, mul2_i=0, mul3_i=0, mul4_i=0;
 	reg signed		[ sixteen-1 : 0]						mul3_t=0, mul4_t=0;
 	reg signed		[ sixteen-1 : 0]	mul1_o=0, mul2_o=0, mul3_o=0, mul4_o=0;
@@ -174,15 +177,14 @@ module RNN(clk, rst, gains_out);
 	reg signed		[ quarter-1 : 0]	layer;
 	reg signed							layer_init;
 
-	integer								feature_input_count = 0;
-
-	reg signed		[ sixteen-1 : 0]	tmp1, tmp2, tmp3;
+	reg signed		[ sixteen-1 : 0]	tmp1, tmp2;
 
 
 	always @ (posedge clk) begin
 		if(rst == 1'b1) begin
 			layer = 0;
 			layer_init = 1'b1;
+			counter = 0;
 			// feature_input_count = 0;
 		end
 		
@@ -216,8 +218,7 @@ module RNN(clk, rst, gains_out);
 						end
 						else if(index2 < M) begin
 							tmp1			= {{8{input_dense_weights[(index2*stride) + index1][7]}}, input_dense_weights[(index2*stride) + index1]};
-							tmp2			= feature[index2];
-							mul1_a			= tmp1 * tmp2;
+							mul1_a			= tmp1 * feature_full[feature_size*counter + index2];
 							mul1_o			= mul1_a[23:8];
 							sum1			= sum1 + mul1_o;
 
@@ -274,7 +275,6 @@ module RNN(clk, rst, gains_out);
 
 					layer_init		= 1'b0;
 					pass_start		= 1'b1;
-					sum3 = 0;
 				end
 				else if (pass_start == 1'b1) begin
 					if(pass1 == 1'b1) begin 
@@ -296,8 +296,8 @@ module RNN(clk, rst, gains_out);
 								sum1			= sum1 + mul1_o;
 
 								tmp2            = {{8{vad_gru_input_weights[(index2*stride) + index1+N][7]}}, vad_gru_input_weights[(index2*stride) + index1+N]};
-								mul2_a			= tmp2 * dense_out[index2];
-								mul2_o			= mul2_a[23:8];
+								mul4_b			= tmp2 * dense_out[index2];
+								mul2_o			= mul4_b[23:8];
 								sum2			= sum2 + mul2_o;
 
 								index2			= index2 + 1;
@@ -359,7 +359,7 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b0) begin
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum3			= {{8{vad_gru_bias[index1 + 2*N][7]}}, vad_gru_bias[index1 + 2*N]};
+								sum2			= {{8{vad_gru_bias[index1 + 2*N][7]}}, vad_gru_bias[index1 + 2*N]};
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -372,7 +372,7 @@ module RNN(clk, rst, gains_out);
 								mul2_i			= dense_out[index2];
 								mul1_a			= tmp1 * mul2_i;
 								mul1_o			= mul1_a[23:8];
-								sum3			= sum3 + mul1_o;
+								sum2			= sum2 + mul1_o;
 
 								index2			= index2 + 1;
 							end
@@ -386,7 +386,7 @@ module RNN(clk, rst, gains_out);
 								mul3_t			= mul3_a[23:8];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[23:8];
-								sum3			= sum3 + mul3_o;
+								sum2			= sum2 + mul3_o;
 
 								index3			= index3 + 1;
 							end
@@ -395,7 +395,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if (index2_ready && index3_ready) begin
-								mul2_o			= (sum3[15] == 0)? sum3 : 16'b0;  
+								mul2_o			= (sum2[15] == 0)? sum2 : 16'b0;  
 
 								mul4_a			= z[index1] * vad_gru_state[index1];
 								mul4_b			= (ONE_16 - z[index1]) * mul2_o;
@@ -475,8 +475,7 @@ module RNN(clk, rst, gains_out);
 							mul4_i			= mul3_o[sixteen-1] ? (~mul3_o + 1'b1): mul3_o;
 							mul4_t			= tanh_mem[mul4_i[9:0]];
 							mul4_o			= (mul3_o[15]) ? /*-1*/(mul3_o[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul4_t + 1'b1)) : /*+1*/(mul3_o[15:10] != 6'b0000_00 ? (ONE_16):(mul4_t));
-							mul3_i			= (mul4_t >>> 1) + HALF_16;
-							vad				= mul4_i;
+							vad				= (mul4_t >>> 1) + HALF_16;
 
 							index1			= index1 + 1;
 							index1_ready	= 1'b1;
@@ -505,7 +504,7 @@ module RNN(clk, rst, gains_out);
 					index1 = index1 + 1;
 				end
 				else if(index1 < input_dense_size + vad_gru_size + INPUT_SIZE) begin
-					noise_input[index1] = feature[index1 - input_dense_size - vad_gru_size];
+					noise_input[index1] = feature_full[feature_size*counter + index1 - input_dense_size - vad_gru_size];
 					index1 = index1 + 1;
 				end
 				else begin
@@ -536,7 +535,6 @@ module RNN(clk, rst, gains_out);
 
 					layer_init		= 1'b0;
 					pass_start		= 1'b1;
-					sum3 = 0;
 				end
 				else if (pass_start == 1'b1) begin
 					if(pass1 == 1'b1) begin 
@@ -558,8 +556,8 @@ module RNN(clk, rst, gains_out);
 								sum1			= sum1 + mul1_o;
 
 								tmp2			= {{8{noise_gru_input_weights[(index2*stride) + index1+N][quarter-1]}}, noise_gru_input_weights[(index2*stride) + index1+N]};
-								mul2_a			= tmp2 * noise_input[index2];
-								mul2_o			= mul2_a[23:8];
+								mul4_b			= tmp2 * noise_input[index2];
+								mul2_o			= mul4_b[23:8];
 								sum2			= sum2 + mul2_o;
 
 								index2			= index2 + 1;
@@ -618,7 +616,7 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b0) begin
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum3			= {{8{noise_gru_bias[index1 + 2*N][quarter-1]}}, noise_gru_bias[index1 + 2*N], 16'b00000000_00000000};
+								sum2			= {{8{noise_gru_bias[index1 + 2*N][quarter-1]}}, noise_gru_bias[index1 + 2*N], 16'b00000000_00000000};
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -630,7 +628,7 @@ module RNN(clk, rst, gains_out);
 								tmp1			= {{8{noise_gru_input_weights[(index2*stride) + index1 + (2*N)][quarter-1]}}, noise_gru_input_weights[(index2*stride) + index1 + (2*N)]};
 								mul1_a			= tmp1 * noise_input[index2];
 								mul1_o			= mul1_a[23:8];
-								sum3			= sum3 + mul1_o;
+								sum2			= sum2 + mul1_o;
 
 								index2			= index2 + 1;
 							end
@@ -644,7 +642,7 @@ module RNN(clk, rst, gains_out);
 								mul3_t			= mul3_a[23:8];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[23:8];
-								sum3			= sum3 + mul3_o;
+								sum2			= sum2 + mul3_o;
 
 								index3			= index3 + 1;
 							end
@@ -653,7 +651,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if (index2_ready && index3_ready) begin
-								mul2_o			= (sum3[15] == 0)? sum3 : 16'b0;  
+								mul2_o			= (sum2[15] == 0)? sum2 : 16'b0;  
 
 								mul4_a			= z[index1] * noise_gru_state[index1];
 								mul4_b			= (ONE_16 - z[index1]) * mul2_o;
@@ -701,7 +699,7 @@ module RNN(clk, rst, gains_out);
 					index1 = index1 + 1;
 				end
 				else if(index1 < vad_gru_size + noise_gru_size + INPUT_SIZE) begin
-					denoise_input[index1] = feature[index1 - vad_gru_size - noise_gru_size];
+					denoise_input[index1] = feature_full[feature_size*counter + index1 - vad_gru_size - noise_gru_size];
 					index1 = index1 + 1;
 				end
 				else begin
@@ -733,7 +731,6 @@ module RNN(clk, rst, gains_out);
 
 					layer_init		= 1'b0;
 					pass_start		= 1'b1;
-					sum3 = 0;
 				end
 				else if (pass_start == 1'b1) begin
 					if(pass1 == 1'b1) begin 
@@ -771,8 +768,8 @@ module RNN(clk, rst, gains_out);
 								else begin
 									tmp2			= {{8{denoise_gru_input_weights_3[(index2*stride) + index1 + N - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][7]}}, denoise_gru_input_weights_3[(index2*stride) + index1 + N - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2]};
 								end
-								mul2_a			= tmp2 * denoise_input[index2];
-								mul2_o			= mul2_a[23:8];
+								mul4_b			= tmp2 * denoise_input[index2];
+								mul2_o			= mul4_b[23:8];
 								sum2			= sum2 + mul2_o;
 
 								index2			= index2 + 1;
@@ -844,7 +841,7 @@ module RNN(clk, rst, gains_out);
 					if(pass1 == 1'b0) begin
 						if(index1 < N) begin
 							if (index1_ready) begin
-								sum3			= {{8{denoise_gru_bias[index1 + 2*N][quarter-1]}}, denoise_gru_bias[index1 + 2*N]};
+								sum2			= {{8{denoise_gru_bias[index1 + 2*N][quarter-1]}}, denoise_gru_bias[index1 + 2*N]};
 								index1_ready	= 1'b0;
 								index2			= 0; 
 								index3			= 0;
@@ -865,7 +862,7 @@ module RNN(clk, rst, gains_out);
 
 								mul1_a			= tmp1 * denoise_input[index2];
 								mul1_o			= mul1_a[23:8];
-								sum3			= sum3 + mul1_o;
+								sum2			= sum2 + mul1_o;
 
 								index2			= index2 + 1;
 							end
@@ -884,7 +881,7 @@ module RNN(clk, rst, gains_out);
 								mul3_t			= mul3_a[23:8];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[23:8];
-								sum3			= sum3 + mul3_o;
+								sum2			= sum2 + mul3_o;
 
 								index3			= index3 + 1;
 							end
@@ -893,7 +890,7 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if (index2_ready && index3_ready) begin
-								mul2_o			= (sum3[15] == 0)? sum3 : 16'b0;  
+								mul2_o			= (sum2[15] == 0)? sum2 : 16'b0;  
 
 								mul4_a			= z[index1] * denoise_gru_state[index1];
 								mul4_b			= (ONE_16 - z[index1]) * mul2_o;
@@ -1002,6 +999,9 @@ module RNN(clk, rst, gains_out);
 				end
 				else begin
 					gains_out = 16'b0;
+					layer_init			= 1'b1;
+					layer				= 0;
+					counter = counter + 1;
 				end
 			end
 
