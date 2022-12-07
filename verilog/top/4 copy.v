@@ -842,11 +842,11 @@ module RNN(clk, rst, gains_out);
 								if ((index2*stride) + index1 + (2*N) < denoise_gru_input_weights_size_1) begin
 									tmp1			= {{8{denoise_gru_input_weights_1[(index2*stride) + index1 + (2*N)][quarter-1]}}, denoise_gru_input_weights_1[(index2*stride) + index1 + (2*N)]};
 								end
-								else if ((index2*stride) + index1 + N < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
-									tmp1			= {{8{denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2]};
+								else if ((index2*stride) + index1 + (2*N) < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
+									tmp1			= {{8{denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1]};
 								end
 								else begin
-									tmp1			= {{8{denoise_gru_input_weights_3[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2 - denoise_gru_input_weights_size_3][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2 - denoise_gru_input_weights_size_3]};
+									tmp1			= {{8{denoise_gru_input_weights_3[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2]};
 								end
 
 								mul1_a			= tmp1 * denoise_input[index2];
