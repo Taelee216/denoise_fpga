@@ -60,7 +60,7 @@ module RNN(clk, rst, gains_out);
 	reg signed		[ sixteen-1 : 0]	tanh_mem [(1<<10)-1:0];  
 	
 	// I/O
-	reg signed		[    full-1 : 0]	feature				[feature_size-1:0];
+	reg signed		[ sixteen-1 : 0]	feature				[feature_size-1:0];
 	reg signed		[ sixteen-1 : 0]	gains				[gains_size-1:0];
 	reg signed		[ sixteen-1 : 0]	vad;
 
@@ -97,7 +97,7 @@ module RNN(clk, rst, gains_out);
 	reg signed		[ sixteen-1 : 0]	noise_input						[noise_input_size-1:0];
 	reg signed		[ sixteen-1 : 0]	denoise_input					[denoise_input_size-1:0];
 
-	reg signed		[32-1 : 0]	gains_read						[gains_size-1:0];
+	reg signed		[ sixteen-1 : 0]	gains_read						[gains_size-1:0];
 
 	// mem read
 	initial begin
@@ -154,7 +154,7 @@ module RNN(clk, rst, gains_out);
 	endgenerate
 
 	reg signed		[ sixteen-1 : 0]	M,				N,				stride;
-	reg signed		[ sixteen-1 : 0]	index1,			index2,			index3;
+	reg signed		[    full-1 : 0]	index1,			index2,			index3;
 	reg signed							index1_ready,	index2_ready,	index3_ready;
 	reg signed							pass1,			pass_start;
 
@@ -212,11 +212,10 @@ module RNN(clk, rst, gains_out);
 							sum1			= {{8{input_dense_bias[index1][7]}}, input_dense_bias[index1]};
 							index1_ready	= 1'b0;
 							index2			= 0; 
-							index3			= 0;
 						end
 						else if(index2 < M) begin
 							tmp1			= {{8{input_dense_weights[(index2*stride) + index1][7]}}, input_dense_weights[(index2*stride) + index1]};
-							tmp2			= feature[index2][23:8];
+							tmp2			= feature[index2];
 							mul1_a			= tmp1 * tmp2;
 							mul1_o			= mul1_a[23:8];
 							sum1			= sum1 + mul1_o;
@@ -331,9 +330,7 @@ module RNN(clk, rst, gains_out);
 								// mul3_t = tanh[| x * 1/2 |]
 								mul3_t			= tanh_mem[mul3_i[9:0]];
 								mul3_o			= (mul1_i[15]) ? /*-1*/(mul1_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul3_t + 1'b1)) : /*+1*/(mul1_i[15:10] != 6'b0000_00 ? (ONE_16):(mul3_t));
-								mul1_o			= (mul3_o >>> 1) + HALF_16;
-
-								z[index1]		= mul1_o;
+								z[index1]		= (mul3_o >>> 1) + HALF_16;
 
 								// x * 1/2
 								mul2_i			= sum2 >>> 1;
@@ -342,17 +339,10 @@ module RNN(clk, rst, gains_out);
 								// tanh[| x * 1/2 |]
 								mul4_t			= tanh_mem[mul4_i[9:0]];
 								mul4_o			= (mul2_i[15]) ? /*-1*/(mul2_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul4_t + 1'b1)) : /*+1*/(mul2_i[15:10] != 6'b0000_00 ? (ONE_16):(mul4_t));
-								mul2_o			= (mul4_o >>> 1) + HALF_16;
-
-								r[index1]		= mul2_o;
+								r[index1]		= (mul4_o >>> 1) + HALF_16;
 
 								index1			= index1 + 1;
 								index1_ready	= 1'b1;
-								index2			= 0;
-								index3			= 0;
-								sum1			= 0;
-								sum2			= 0;
-								sum3			= 0;
 							end
 						end
 						else begin	// index == N
@@ -389,8 +379,8 @@ module RNN(clk, rst, gains_out);
 							end
 
 							if(index3 < N) begin
-								tmp1			= {{8{vad_gru_recurrent_weights[(index3*stride) + index1 + (2*N)][7]}}, vad_gru_recurrent_weights[(index3*stride) + index1 + (2*N)]};
-								mul3_a			= tmp1 * vad_gru_state[index3];
+								tmp2			= {{8{vad_gru_recurrent_weights[(index3*stride) + index1 + (2*N)][7]}}, vad_gru_recurrent_weights[(index3*stride) + index1 + (2*N)]};
+								mul3_a			= tmp2 * vad_gru_state[index3];
 								mul3_t			= mul3_a[23:8];
 								mul3_b			= mul3_t * r[index3];
 								mul3_o			= mul3_b[23:8];
@@ -431,6 +421,569 @@ module RNN(clk, rst, gains_out);
 				end
 			end
 //    gru1    ***************************************************//
+
+
+
+
+
+
+//   dense2   ***************************************************//
+			if(layer == 2) begin
+				// integer & reg initialize
+				if(layer_init == 1'b1) begin
+					M				= vad_gru_size;
+					N				= vad_output_bias_size; 
+					stride			= vad_output_bias_size; 
+
+					index1			= 0;
+					index2			= 0;
+					index3			= 0;
+
+					index1_ready	= 1'b1;
+					index2_ready	= 1'b0;
+					index3_ready	= 1'b0;
+
+					pass1			= 1'b1;
+
+					layer_init		= 1'b0;
+				end
+				else begin
+					if(index1 < N) begin
+						if (index1_ready) begin
+							sum1			= {{8{vad_output_bias[index1][7]}}, vad_output_bias[index1]};
+							index1_ready	= 1'b0;
+							index2			= 0; 
+						end
+						if(index2 < M) begin
+							tmp1			= {{8{vad_output_weights[(index2*stride) + index1][7]}}, vad_output_weights[(index2*stride) + index1]};
+							mul1_a			= tmp1 * vad_gru_state[index2];
+							mul1_o			= mul1_a[23:8];
+							sum1			= sum1 + mul1_o;
+
+							index2			= index2 + 1;
+						end
+						else begin // index == M
+							mul3_o			= sum1;
+							mul4_i			= mul3_o[sixteen-1] ? (~mul3_o + 1'b1): mul3_o;
+							mul4_t			= tanh_mem[mul4_i[9:0]];
+							mul4_o			= (mul3_o[15]) ? /*-1*/(mul3_o[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul4_t + 1'b1)) : /*+1*/(mul3_o[15:10] != 6'b0000_00 ? (ONE_16):(mul4_t));
+							mul3_i			= (mul4_t >>> 1) + HALF_16;
+							vad				= mul4_i;
+
+							index1			= index1 + 1;
+							index1_ready	= 1'b1;
+						end
+					end
+					else begin	// index == N
+						layer_init	= 1'b1;
+						layer		= 3;
+						pass_start	= 1'b0;
+						index1 = 0;
+						index2 = 0;
+						index3 = 0;
+					end
+				end
+			end
+//   dense2   ***************************************************//
+
+
+			if(layer == 3) begin 
+				if(index1 < input_dense_size) begin
+					noise_input[index1] = dense_out[index1];
+					index1 = index1 + 1;
+				end
+				else if(index1 < input_dense_size + vad_gru_size) begin 
+					noise_input[index1] = vad_gru_state[index1 - input_dense_size];
+					index1 = index1 + 1;
+				end
+				else if(index1 < input_dense_size + vad_gru_size + INPUT_SIZE) begin
+					noise_input[index1] = feature[index1 - input_dense_size - vad_gru_size];
+					index1 = index1 + 1;
+				end
+				else begin
+					layer		= 4;
+					index1 = 0;
+				end
+			end
+
+
+
+//    gru2    ***************************************************//
+			if(layer == 4) begin
+				// integer & reg initialize
+				if(layer_init == 1'b1) begin
+					M				= noise_input_size;
+					N				= noise_gru_size; 
+					stride			= 3 * noise_gru_size; 
+
+					index1			= 0;
+					index2			= 0;
+					index3			= 0;
+
+					index1_ready	= 1'b1;
+					index2_ready	= 1'b0;
+					index3_ready	= 1'b0;
+
+					pass1			= 1'b1;
+
+					layer_init		= 1'b0;
+					pass_start		= 1'b1;
+					sum3 = 0;
+				end
+				else if (pass_start == 1'b1) begin
+					if(pass1 == 1'b1) begin 
+						if(index1 < N) begin
+							if (index1_ready) begin
+								sum1			= {{8{noise_gru_bias[index1  ][quarter-1]}}, noise_gru_bias[index1  ]};
+								sum2			= {{8{noise_gru_bias[index1+N][quarter-1]}}, noise_gru_bias[index1+N]};
+								index1_ready	= 1'b0;
+								index2			= 0; 
+								index3			= 0;
+								index2_ready	= 1'b0;
+								index3_ready	= 1'b0;
+							end
+
+							if(index2 < M) begin
+								tmp1			= {{8{noise_gru_input_weights[(index2*stride) + index1  ][quarter-1]}}, noise_gru_input_weights[(index2*stride) + index1  ]};
+								mul1_a			= tmp1 * noise_input[index2];
+								mul1_o			= mul1_a[23:8];
+								sum1			= sum1 + mul1_o;
+
+								tmp2			= {{8{noise_gru_input_weights[(index2*stride) + index1+N][quarter-1]}}, noise_gru_input_weights[(index2*stride) + index1+N]};
+								mul2_a			= tmp2 * noise_input[index2];
+								mul2_o			= mul2_a[23:8];
+								sum2			= sum2 + mul2_o;
+
+								index2			= index2 + 1;
+							end
+							else begin
+								index2_ready	= 1'b1;
+							end
+
+							if(index3 < N) begin
+								tmp1			= {{8{noise_gru_recurrent_weights[(index3*stride) + index1  ][quarter-1]}}, noise_gru_recurrent_weights[(index3*stride) + index1  ]};
+								mul3_a			= tmp1 * noise_gru_state[index3];
+								mul3_o			= mul3_a[23:8];
+								sum1			= sum1 + mul3_o;
+								
+								tmp2			= {{8{noise_gru_recurrent_weights[(index3*stride) + index1+N][quarter-1]}}, noise_gru_recurrent_weights[(index3*stride) + index1+N]};
+								mul4_a			= tmp2 * noise_gru_state[index3];
+								mul4_o			= mul4_a[23:8];
+								sum2			= sum2 + mul4_o;
+
+								index3			= index3 + 1;
+							end
+							else begin
+								index3_ready	= 1'b1;
+							end
+
+							if (index2_ready && index3_ready) begin
+								mul1_i			= sum1 >>> 1;
+								mul3_i			= mul1_i[15] ? (~mul1_i + 1'b1): mul1_i;
+								mul3_t			= tanh_mem[mul3_i[9:0]];
+								mul3_o			= (mul1_i[15]) ? /*-1*/(mul1_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul3_t + 1'b1)) : /*+1*/(mul1_i[15:10] != 6'b0000_00 ? (ONE_16):(mul3_t));
+								z[index1]		= (mul3_o >>> 1) + HALF_16;
+
+								// x * 1/2
+								mul2_i			= sum2 >>> 1;
+								// | x * 1/2 |
+								mul4_i			= mul2_i[15] ? (~mul2_i + 1'b1): mul2_i;
+								// tanh[| x * 1/2 |]
+								mul4_t			= tanh_mem[mul4_i[9:0]];
+								mul4_o			= (mul2_i[15]) ? /*-1*/(mul2_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul4_t + 1'b1)) : /*+1*/(mul2_i[15:10] != 6'b0000_00 ? (ONE_16):(mul4_t));
+								r[index1]		= (mul4_o >>> 1) + HALF_16;
+
+								index1			= index1 + 1;
+								index1_ready	= 1'b1;
+							end
+						end
+						else begin	// index == N
+							pass1				= 1'b0;
+							index1				= 0; 
+							index2				= 0; 
+							index3				= 0;
+							index1_ready		= 1'b1;
+							index2_ready		= 1'b0;
+							index3_ready		= 1'b0;
+						end
+					end
+					if(pass1 == 1'b0) begin
+						if(index1 < N) begin
+							if (index1_ready) begin
+								sum3			= {{8{noise_gru_bias[index1 + 2*N][quarter-1]}}, noise_gru_bias[index1 + 2*N], 16'b00000000_00000000};
+								index1_ready	= 1'b0;
+								index2			= 0; 
+								index3			= 0;
+								index2_ready	= 1'b0;
+								index3_ready	= 1'b0;
+							end
+
+							if(index2 < M) begin
+								tmp1			= {{8{noise_gru_input_weights[(index2*stride) + index1 + (2*N)][quarter-1]}}, noise_gru_input_weights[(index2*stride) + index1 + (2*N)]};
+								mul1_a			= tmp1 * noise_input[index2];
+								mul1_o			= mul1_a[23:8];
+								sum3			= sum3 + mul1_o;
+
+								index2			= index2 + 1;
+							end
+							else begin
+								index2_ready	= 1'b1;
+							end
+
+							if(index3 < N) begin
+								tmp2			= {{8{noise_gru_recurrent_weights[(index3*stride) + index1 + (2*N)][quarter-1]}}, noise_gru_recurrent_weights[(index3*stride) + index1 + (2*N)]};
+								mul3_a			= tmp2 * noise_gru_state[index3];
+								mul3_t			= mul3_a[23:8];
+								mul3_b			= mul3_t * r[index3];
+								mul3_o			= mul3_b[23:8];
+								sum3			= sum3 + mul3_o;
+
+								index3			= index3 + 1;
+							end
+							else begin
+								index3_ready	= 1'b1;
+							end
+
+							if (index2_ready && index3_ready) begin
+								mul2_o			= (sum3[15] == 0)? sum3 : 16'b0;  
+
+								mul4_a			= z[index1] * noise_gru_state[index1];
+								mul4_b			= (ONE_16 - z[index1]) * mul2_o;
+
+								noise_gru_state[index1]		= mul4_a[23:8] + mul4_b[23:8];
+
+								index1			= index1 + 1;
+
+								index1_ready	= 1'b1;
+								index2_ready	= 1'b0;
+								index3_ready	= 1'b0;
+								index2			= 0;
+								index3			= 0;
+							end
+						end
+						else begin
+							layer_init			= 1'b1;
+							layer				= 5;
+							pass_start			= 1'b0;
+							index1 = 0;
+							index2 = 0;
+							index3 = 0;
+						end
+					end
+				end
+			end
+//    gru2    ***************************************************//
+
+
+
+
+			if(layer == 5) begin 
+				if(index1 < vad_gru_size) begin
+					denoise_input[index1] = vad_gru_state[index1];
+					index1 = index1 + 1;
+				end
+				else if(index1 < vad_gru_size + noise_gru_size) begin 
+					denoise_input[index1] = noise_gru_state[index1 - vad_gru_size];
+					index1 = index1 + 1;
+				end
+				else if(index1 < vad_gru_size + noise_gru_size + INPUT_SIZE) begin
+					denoise_input[index1] = feature[index1 - vad_gru_size - noise_gru_size];
+					index1 = index1 + 1;
+				end
+				else begin
+					layer		=6;
+					index1 = 0;
+				end
+			end
+
+
+
+			
+//    gru3    ***************************************************//
+			if(layer == 6) begin
+				// integer & reg initialize
+				if(layer_init == 1'b1) begin
+					M				= denoise_input_size;
+					N				= denoise_gru_size; 
+					stride			= 3 * denoise_gru_size; 
+
+					index1			= 0;
+					index2			= 0;
+					index3			= 0;
+
+					index1_ready	= 1'b1;
+					index2_ready	= 1'b0;
+					index3_ready	= 1'b0;
+
+					pass1			= 1'b1;
+
+					layer_init		= 1'b0;
+					pass_start		= 1'b1;
+					sum3 = 0;
+				end
+				else if (pass_start == 1'b1) begin
+					if(pass1 == 1'b1) begin 
+						if(index1 < N) begin
+							if (index1_ready) begin
+								sum1			= {{8{denoise_gru_bias[index1  ][quarter-1]}}, denoise_gru_bias[index1  ]};
+								sum2			= {{8{denoise_gru_bias[index1+N][quarter-1]}}, denoise_gru_bias[index1+N]};
+								index1_ready	= 1'b0;
+								index2			= 0; 
+								index3			= 0;
+								index2_ready	= 1'b0;
+								index3_ready	= 1'b0;
+							end
+
+							if(index2 < M) begin
+								if ((index2*stride) + index1 < denoise_gru_input_weights_size_1) begin
+									tmp1			= {{8{denoise_gru_input_weights_1[(index2*stride) + index1                                                                      ][7]}}, denoise_gru_input_weights_1[(index2*stride) + index1                                                                      ]};
+								end
+								else if ((index2*stride) + index1 < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
+									tmp1			= {{8{denoise_gru_input_weights_2[(index2*stride) + index1 - denoise_gru_input_weights_size_1                                   ][7]}}, denoise_gru_input_weights_2[(index2*stride) + index1 - denoise_gru_input_weights_size_1                                   ]};
+								end
+								else begin
+									tmp1			= {{8{denoise_gru_input_weights_3[(index2*stride) + index1 - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][7]}}, denoise_gru_input_weights_2[(index2*stride) + index1 - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2]};
+								end
+								mul1_a			= tmp1 * denoise_input[index2];
+								mul1_o			= mul1_a[23:8];
+								sum1			= sum1 + mul1_o;
+
+								if ((index2*stride) + index1 + N < denoise_gru_input_weights_size_1) begin
+									tmp2			= {{8{denoise_gru_input_weights_1[(index2*stride) + index1 + N                                                                      ][7]}}, denoise_gru_input_weights_1[(index2*stride) + index1 + N                                                                      ]};
+								end
+								else if ((index2*stride) + index1 + N < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
+									tmp2			= {{8{denoise_gru_input_weights_2[(index2*stride) + index1 + N - denoise_gru_input_weights_size_1                                   ][7]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + N - denoise_gru_input_weights_size_1                                   ]};
+								end
+								else begin
+									tmp2			= {{8{denoise_gru_input_weights_3[(index2*stride) + index1 + N - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][7]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + N - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2]};
+								end
+								mul2_a			= tmp2 * denoise_input[index2];
+								mul2_o			= mul2_a[23:8];
+								sum2			= sum2 + mul2_o;
+
+								index2			= index2 + 1;
+							end
+							else begin
+								index2_ready	= 1'b1;
+							end
+
+							if(index3 < N) begin
+								if ((index3*stride) + index1 < denoise_gru_recurrent_weights_size_1) begin
+									tmp1			= {{8{denoise_gru_recurrent_weights_1[(index3*stride) + index1                                           ][quarter-1]}}, denoise_gru_recurrent_weights_1[(index3*stride) + index1                                           ]};
+								end
+								else begin
+									tmp1			= {{8{denoise_gru_recurrent_weights_2[(index3*stride) + index1 - denoise_gru_recurrent_weights_size_1    ][quarter-1]}}, denoise_gru_recurrent_weights_2[(index3*stride) + index1 - denoise_gru_recurrent_weights_size_1    ]};
+								end
+								mul3_a			= tmp1 * denoise_gru_state[index3];
+								mul3_o			= mul3_a[23:8];
+								sum1			= sum1 + mul3_o;
+
+								if ((index3*stride) + index1 + N < denoise_gru_recurrent_weights_size_1) begin
+									tmp2			= {{8{denoise_gru_recurrent_weights_1[(index3*stride) + index1 + N                                       ][quarter-1]}}, denoise_gru_recurrent_weights_1[(index3*stride) + index1 + N                                       ]};
+								end
+								else begin
+									tmp2			= {{8{denoise_gru_recurrent_weights_2[(index3*stride) + index1 + N - denoise_gru_recurrent_weights_size_1][quarter-1]}}, denoise_gru_recurrent_weights_2[(index3*stride) + index1 + N - denoise_gru_recurrent_weights_size_1]};
+								end
+								mul4_a			= tmp2 * denoise_gru_state[index3];
+								mul4_o			= mul4_a[23:8];
+								sum2			= sum2 + mul4_o;
+
+								index3			= index3 + 1;
+							end
+							else begin
+								index3_ready	= 1'b1;
+							end
+
+							if (index2_ready && index3_ready) begin
+								// mul1_i = x * 1/2
+								mul1_i			= sum1 >>> 1;
+								// mul3_i = | x * 1/2 |
+								mul3_i			= mul1_i[15] ? (~mul1_i + 1'b1): mul1_i;
+								// mul3_t = tanh[| x * 1/2 |]
+								mul3_t			= tanh_mem[mul3_i[9:0]];
+								mul3_o			= (mul1_i[15]) ? /*-1*/(mul1_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul3_t + 1'b1)) : /*+1*/(mul1_i[15:10] != 6'b0000_00 ? (ONE_16):(mul3_t));
+								z[index1]		= (mul3_o >>> 1) + HALF_16;
+
+								// x * 1/2
+								mul2_i			= sum2 >>> 1;
+								// | x * 1/2 |
+								mul4_i			= mul2_i[15] ? (~mul2_i + 1'b1): mul2_i;
+								// tanh[| x * 1/2 |]
+								mul4_t			= tanh_mem[mul4_i[9:0]];
+								mul4_o			= (mul2_i[15]) ? /*-1*/(mul2_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul4_t + 1'b1)) : /*+1*/(mul2_i[15:10] != 6'b0000_00 ? (ONE_16):(mul4_t));
+								r[index1]		= (mul4_o >>> 1) + HALF_16;
+
+								index1			= index1 + 1;
+								index1_ready	= 1'b1;
+							end
+						end
+						else begin	// index == N
+							pass1				= 1'b0;
+							index1				= 0; 
+							index2				= 0; 
+							index3				= 0;
+							index1_ready		= 1'b1;
+							index2_ready		= 1'b0;
+							index3_ready		= 1'b0;
+						end
+					end
+					if(pass1 == 1'b0) begin
+						if(index1 < N) begin
+							if (index1_ready) begin
+								sum3			= {{8{denoise_gru_bias[index1 + 2*N][quarter-1]}}, denoise_gru_bias[index1 + 2*N]};
+								index1_ready	= 1'b0;
+								index2			= 0; 
+								index3			= 0;
+								index2_ready	= 1'b0;
+								index3_ready	= 1'b0;
+							end
+
+							if(index2 < M) begin
+								if ((index2*stride) + index1 + (2*N) < denoise_gru_input_weights_size_1) begin
+									tmp1			= {{8{denoise_gru_input_weights_1[(index2*stride) + index1 + (2*N)][quarter-1]}}, denoise_gru_input_weights_1[(index2*stride) + index1 + (2*N)]};
+								end
+								else if ((index2*stride) + index1 + N < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
+									tmp1			= {{8{denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2]};
+								end
+								else begin
+									tmp1			= {{8{denoise_gru_input_weights_3[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2 - denoise_gru_input_weights_size_3][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2 - denoise_gru_input_weights_size_3]};
+								end
+
+								mul1_a			= tmp1 * denoise_input[index2];
+								mul1_o			= mul1_a[23:8];
+								sum3			= sum3 + mul1_o;
+
+								index2			= index2 + 1;
+							end
+							else begin
+								index2_ready	= 1'b1;
+							end
+
+							if(index3 < N) begin
+								if ((index3*stride) + index1 + (2*N) < denoise_gru_recurrent_weights_size_1) begin
+									tmp2			= {{8{denoise_gru_recurrent_weights_1[(index3*stride) + index1 + (2*N)][quarter-1]}}, denoise_gru_recurrent_weights_1[(index3*stride) + index1 + (2*N)]};
+								end
+								else begin
+									tmp2			= {{8{denoise_gru_recurrent_weights_2[(index3*stride) + index1 + (2*N) - denoise_gru_recurrent_weights_size_1][quarter-1]}}, denoise_gru_recurrent_weights_2[(index3*stride) + index1 + (2*N) - denoise_gru_recurrent_weights_size_1]};
+								end
+								mul3_a			= tmp2 * denoise_gru_state[index3];
+								mul3_t			= mul3_a[23:8];
+								mul3_b			= mul3_t * r[index3];
+								mul3_o			= mul3_b[23:8];
+								sum3			= sum3 + mul3_o;
+
+								index3			= index3 + 1;
+							end
+							else begin
+								index3_ready	= 1'b1;
+							end
+
+							if (index2_ready && index3_ready) begin
+								mul2_o			= (sum3[15] == 0)? sum3 : 16'b0;  
+
+								mul4_a			= z[index1] * denoise_gru_state[index1];
+								mul4_b			= (ONE_16 - z[index1]) * mul2_o;
+
+								denoise_gru_state[index1]		= mul4_a[23:8] + mul4_b[23:8];
+
+								index1			= index1 + 1; 
+
+								index1_ready	= 1'b1;
+								index2_ready	= 1'b0;
+								index3_ready	= 1'b0;
+								index2			= 0;
+								index3			= 0;
+							end
+						end
+						else begin
+							layer_init			= 1'b1;
+							layer				= 7;
+							pass_start			= 1'b0;
+							index1 = 0;
+							index2 = 0;
+							index3 = 0;
+						end
+					end
+				end
+			end
+//    gru3    ***************************************************//
+
+
+
+
+//   dense3   ***************************************************//
+			if(layer == 7) begin
+				// integer & reg initialize
+				if(layer_init == 1'b1) begin
+					M				= denoise_gru_size;
+					N				= gains_size; 
+					stride			= gains_size; 
+
+					index1			= 0;
+					index2			= 0;
+					index3			= 0;
+
+					index1_ready	= 1'b1;
+					index2_ready	= 1'b0;
+					index3_ready	= 1'b0;
+
+					pass1			= 1'b1;
+
+					layer_init		= 1'b0;
+				end
+				else begin
+					if(index1 < N) begin
+						if (index1_ready) begin
+							sum1			= {{8{denoise_output_bias[index1][quarter-1]}}, denoise_output_bias[index1]};
+							index1_ready	= 1'b0;
+							index2			= 0; 
+						end
+						if(index2 < M) begin
+							tmp1			= {{8{denoise_output_weights[(index2*stride) + index1][quarter-1]}}, denoise_output_weights[(index2*stride) + index1]};
+							mul1_a			= tmp1 * denoise_gru_state[index2];
+							mul1_o			= mul1_a[23:8];
+							sum1			= sum1 + mul1_o;
+
+							index2			= index2 + 1;
+						end
+						else begin // index == M
+
+							// mul1_i = x * 1/2
+							mul3_i			= sum1 >>> 1;
+							// mul3_i = | x * 1/2 |
+							mul4_i			= mul3_i[15] ? (~mul3_i + 1'b1): mul3_i;
+							// mul3_t = tanh[| x * 1/2 |]
+							mul4_t			= tanh_mem[mul4_i[9:0]];
+							mul4_o			= (mul3_i[15]) ? /*-1*/(mul3_i[15:10] != 6'b1111_11 ? (MINUS_ONE_16) : (~mul4_t + 1'b1)) : /*+1*/(mul3_i[15:10] != 6'b0000_00 ? (ONE_16):(mul4_t));
+							gains[index1]	= (mul4_o >>> 1) + HALF_16;
+
+							index1			= index1 + 1;
+							index1_ready	= 1'b1;
+							index2 = 0;
+						end
+					end
+					else begin	// index == N
+						layer_init	= 1'b1;
+						layer		= 8;
+						pass_start	= 1'b0;
+						index1 = 0;
+						index2 = 0;
+						index3 = 0;
+					end
+				end
+			end
+//   dense3   ***************************************************//
+
+
+			if(layer == 8) begin
+				if (index1 < gains_size) begin
+					gains_out = gains[index1];
+					index1 = index1 + 1;
+				end
+				else begin
+					gains_out = 16'b0;
+				end
+			end
 
 
 
