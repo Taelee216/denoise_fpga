@@ -459,14 +459,14 @@ void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const
 
 typedef uint16_t fixed_point_t;
 
-float fixed_to_double(fixed_point_t input);
-fixed_point_t double_to_fixed(float input);
+double fixed_to_double(fixed_point_t input);
+fixed_point_t double_to_fixed(double input);
 
-inline float fixed_to_double(fixed_point_t input) {
+inline double fixed_to_double(fixed_point_t input) {
     return ((float)input / (float)(1 << FIXED_POINT_FRACTIONAL_BITS));
 }
 
-inline fixed_point_t double_to_fixed(float input) {
+inline fixed_point_t double_to_fixed(double input) {
     return (fixed_point_t)(round(input * (1 << FIXED_POINT_FRACTIONAL_BITS)));
 }
 FILE *f_out;
@@ -508,81 +508,72 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 
 	silence = compute_frame_features(st, X, P, Ex, Ep, Exp, features, x);
 
+
+
+	
+	FILE *f_feat, *f_gain, *f_state_in;
+	/*
+	f_state_in = fopen("input_state_float.txt", "a");
+	fprintf(f_state_in, "vad_gru_state\n");
+	for (int j = 0; j < st->rnn.model->vad_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.vad_gru_state[j]);
+	fprintf(f_state_in, "\n");
+	fprintf(f_state_in, "noise_gru_state\n");
+	for (int j = 0; j < st->rnn.model->noise_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.noise_gru_state[j]);
+	fprintf(f_state_in, "\n");
+	fprintf(f_state_in, "denoise_gru_state\n");
+	for (int j = 0; j < st->rnn.model->denoise_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.denoise_gru_state[j]);
+	fprintf(f_state_in, "\n");
+	fclose(f_state_in);
+	fclose(f_feat);
+	fclose(f_gain);
+	*/
+
+	f_out	= fopen("features_float_linux.txt", "a");
+	for (int j = 0; j < NB_FEATURES; j++) fprintf(f_out, "%lf, ", features[j]);
+		fprintf(f_out, "\n");
+	fclose(f_out);
+	
+	for (int j = 0; j < NB_FEATURES; j++) features[j] = fixed_to_double(double_to_fixed(features[j]));
+
+	f_out	= fopen("features_fixed_linux.txt", "a");
+	for (int j = 0; j < NB_FEATURES; j++) fprintf(f_out, "%lf, ", features[j]);
+		fprintf(f_out, "\n");
+	fclose(f_out);
+
+	f_out	= fopen("features_fixed_linux.mem", "a");
+	for (int j = 0; j < NB_FEATURES; j++) {
+		out_fixed(double_to_fixed(features[j]));
+		fprintf(f_out, "\n");
+	}
+	fclose(f_out);
+
+
+
 	if (!silence) {
-
-		FILE *f_feat,	*f_gain, *f_state_in;
-		f_state_in = fopen("input_state_float.txt", "a");
-		fprintf(f_state_in, "vad_gru_state\n");
-		for (int j = 0; j < st->rnn.model->vad_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.vad_gru_state[j]);
-		fprintf(f_state_in, "\n");
-		fprintf(f_state_in, "noise_gru_state\n");
-		for (int j = 0; j < st->rnn.model->noise_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.noise_gru_state[j]);
-		fprintf(f_state_in, "\n");
-		fprintf(f_state_in, "denoise_gru_state\n");
-		for (int j = 0; j < st->rnn.model->denoise_gru_size; j++) fprintf(f_state_in, "%lf, ", st->rnn.denoise_gru_state[j]);
-		fprintf(f_state_in, "\n");
-		fclose(f_state_in);
-
-
-
-		f_out	= fopen("features_float_linux.mem", "a");
-		for (int j = 0; j < NB_FEATURES; j++) fprintf(f_out, "%lf, ", features[j]);
-				fprintf(f_out, "\n");
-		fclose(f_out);
-		
-		for (int j = 0; j < NB_FEATURES; j++) features[j] = fixed_to_double(double_to_fixed(features[j]));
-
-
-
-
 		compute_rnn(&st->rnn, gain, &vad_prob, features);
 
 
-
-
-
-
 		// 완성된다면, compute_rnn 대신 바이너리 파일을 읽어서 처리하자.
-		int size;
-		if(1) {
+		
 
-			f_out	= fopen("features_fixed_linux.mem", "a");
-			size    = NB_FEATURES;
-			for (int j = 0; j < size; j++) {
-				out_fixed(double_to_fixed(features[j]));
-				fprintf(f_out, "\n");
-			}
-			fclose(f_out);
-			f_out	= fopen("gain_fixed_linux.mem", "a");
-			size    = NB_BANDS;
-			for (int j = 0; j < size; j++) {
-				out_fixed(double_to_fixed(gain[j]));
-				fprintf(f_out, "\n");
-			}
-			fclose(f_out);
-			
-			f_feat = fopen("input_feature_float.txt", "a");
-			f_gain = fopen("output_gain_float.txt", "a");
-
-			for (int j = 0; j < NB_FEATURES; j++) fprintf(f_feat, "%lf, ", features[j]);
-			fprintf(f_feat, "\n");
-
-			for (int j = 0; j < NB_BANDS; j++) fprintf(f_gain, "%lf  ", gain[j]);
-			fprintf(f_gain, "\n");
-
-			fclose(f_feat);
-			fclose(f_gain);
+		f_out	= fopen("gain_fixed_linux.mem", "a");
+		for (int j = 0; j < NB_BANDS; j++) {
+			out_fixed(double_to_fixed(gain[j]));
+			fprintf(f_out, "\n");
 		}
-		else {
-			f_feat = fopen("input_feature_bin.txt", "ab");
-			f_gain = fopen("output_gain_bin.txt", "ab");
+		fclose(f_out);
+		
+		// f_feat = fopen("input_feature_float.txt", "a");
+		f_gain = fopen("output_gain_float.txt", "a");
 
-			fwrite(features,	sizeof(float), NB_FEATURES,	f_feat);
-			fwrite(gain,		sizeof(float), NB_BANDS,	f_gain);
+		// for (int j = 0; j < NB_FEATURES; j++) fprintf(f_feat, "%lf, ", features[j]);
+		// fprintf(f_feat, "\n");
 
-			fclose(f_feat);
-			fclose(f_gain);
-		}
+		for (int j = 0; j < NB_BANDS; j++) fprintf(f_gain, "%lf  ", gain[j]);
+		fprintf(f_gain, "\n");
+
+		// fclose(f_feat);
+		fclose(f_gain);
 		
 		pitch_filter(X, P, Ex, Ep, Exp, gain);
 		for ( i = 0; i < NB_BANDS; i++ ) {
