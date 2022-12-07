@@ -457,7 +457,7 @@ void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const
 
 #define FIXED_POINT_FRACTIONAL_BITS 8
 
-typedef uint16_t fixed_point_t;
+typedef int16_t fixed_point_t;
 
 double fixed_to_double(fixed_point_t input);
 fixed_point_t double_to_fixed(double input);
