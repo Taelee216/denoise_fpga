@@ -886,7 +886,7 @@ module RNN(clk, rst, gains_out);
 								if ((index2*stride) + index1 + (2*N) < denoise_gru_input_weights_size_1) begin
 									tmp1			= {{8{denoise_gru_input_weights_1[(index2*stride) + index1 + (2*N)][quarter-1]}}, denoise_gru_input_weights_1[(index2*stride) + index1 + (2*N)], 16'b00000000_00000000};
 								end
-								else if ((index2*stride) + index1 + N < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
+								else if ((index2*stride) + index1 + (2*N) < denoise_gru_input_weights_size_1 + denoise_gru_input_weights_size_2) begin
 									tmp1			= {{8{denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2][quarter-1]}}, denoise_gru_input_weights_2[(index2*stride) + index1 + (2*N) - denoise_gru_input_weights_size_1 - denoise_gru_input_weights_size_2], 16'b00000000_00000000};
 								end
 								else begin
