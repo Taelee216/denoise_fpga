@@ -73,11 +73,11 @@ int main() {
 		printf("%lf\n", tanh[i]);
 	}
 
-	f_out	= fopen("tanh_fixed.mem", "w");
+	f_out	= fopen("tanh_fixed_8_8.mem", "w");
 	size    = sizeof(tanh) / sizeof(tanh[0]);
 	for (int i = 0; i < size; i++) {
 		// fprintf(f_out, "assign\tinput_dense_bias_array[%5d] = 32'b", i);
-		out_fixed(double_to_fixed12(tanh[i]));
+		out_fixed(double_to_fixed8(tanh[i]));
 		fprintf(f_out, "\n");
 		// fprintf(f_out, ";\n");
 	}

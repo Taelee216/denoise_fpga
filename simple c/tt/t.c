@@ -228,12 +228,12 @@ void compute_gru(const GRULayer *gru, float *state, const float *input) {
 		for (j=0;j<N;j++) {
 			sum += gru->recurrent_weights[2*N + j*stride + i]*state[j]*r[j];
 		}
-		//printf("sum_before[%d] : %lf \n", i, WEIGHTS_SCALE*sum);
+		printf("sum_before[%d] : %lf \n", i, WEIGHTS_SCALE*sum);
 		if (gru->activation == ACTIVATION_SIGMOID) sum = sigmoid_approx(WEIGHTS_SCALE*sum);
 		else if (gru->activation == ACTIVATION_TANH) sum = tansig_approx(WEIGHTS_SCALE*sum);
 		else if (gru->activation == ACTIVATION_RELU) sum = relu(WEIGHTS_SCALE*sum);
 		else *(int*)0=0;
-		//printf("sum_after[%d] : %lf \n", i, WEIGHTS_SCALE*sum);
+		printf("sum_after[%d] : %lf \n", i, WEIGHTS_SCALE*sum);
 		h[i] = z[i]*state[i] + (1-z[i])*sum;
 		//printf("h[%d]: %lf = %lf*%lf + (1-%lf)*%lf;\n", i, h[i], z[i], state[i], z[i], sum);
 	}
@@ -252,13 +252,13 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 	
 	compute_dense(rnn->model->input_dense, dense_out, input);
 
-	//for (int i = 0 ; i < 24 ; i++) printf("dense_out[%d] = %lf \n", i, dense_out[i]);
+	for (int i = 0 ; i < 24 ; i++) printf("dense_out[%d] = %lf \n", i, dense_out[i]);
 
 	compute_gru(rnn->model->vad_gru, rnn->vad_gru_state, dense_out);
 
 	for (int i = 0 ; i < 24 ; i++) printf("rnn->vad_gru_state[%d] = %lf \n", i, rnn->vad_gru_state[i]);
 
-	compute_dense(rnn->model->vad_output, vad, rnn->vad_gru_state);
+	//compute_dense(rnn->model->vad_output, vad, rnn->vad_gru_state);
 	/*
 		static const DenseLayer vad_output = {
 			vad_output_bias				[1],
@@ -268,10 +268,10 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 			ACTIVATION_SIGMOID
 		};
 	*/
-	for (i=0;i<rnn->model->input_dense_size;i++)	noise_input[i] 															= dense_out[i];
-	for (i=0;i<rnn->model->vad_gru_size;i++) 		noise_input[i+rnn->model->input_dense_size] 							= rnn->vad_gru_state[i];
-	for (i=0;i<INPUT_SIZE;i++)						noise_input[i+rnn->model->input_dense_size+rnn->model->vad_gru_size]	= input[i];
-	compute_gru(rnn->model->noise_gru, rnn->noise_gru_state, noise_input);
+	//for (i=0;i<rnn->model->input_dense_size;i++)	noise_input[i] 															= dense_out[i];
+	//for (i=0;i<rnn->model->vad_gru_size;i++) 		noise_input[i+rnn->model->input_dense_size] 							= rnn->vad_gru_state[i];
+	//for (i=0;i<INPUT_SIZE;i++)						noise_input[i+rnn->model->input_dense_size+rnn->model->vad_gru_size]	= input[i];
+	//compute_gru(rnn->model->noise_gru, rnn->noise_gru_state, noise_input);
 	/*
 		static const GRULayer noise_gru = {
 			noise_gru_bias				[144],
@@ -283,10 +283,10 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 		};
 	*/
 
-	for (i=0;i<rnn->model->vad_gru_size;i++) 		denoise_input[i] 														= rnn->vad_gru_state[i];
-	for (i=0;i<rnn->model->noise_gru_size;i++)		denoise_input[i+rnn->model->vad_gru_size]								= rnn->noise_gru_state[i];
-	for (i=0;i<INPUT_SIZE;i++)						denoise_input[i+rnn->model->vad_gru_size+rnn->model->noise_gru_size]	= input[i];
-	compute_gru(rnn->model->denoise_gru, rnn->denoise_gru_state, denoise_input);
+	//for (i=0;i<rnn->model->vad_gru_size;i++) 		denoise_input[i] 														= rnn->vad_gru_state[i];
+	//for (i=0;i<rnn->model->noise_gru_size;i++)		denoise_input[i+rnn->model->vad_gru_size]								= rnn->noise_gru_state[i];
+	//for (i=0;i<INPUT_SIZE;i++)						denoise_input[i+rnn->model->vad_gru_size+rnn->model->noise_gru_size]	= input[i];
+	//compute_gru(rnn->model->denoise_gru, rnn->denoise_gru_state, denoise_input);
 	/*
 		static const GRULayer denoise_gru = {
 			denoise_gru_bias			[288],
@@ -297,7 +297,7 @@ void compute_rnn(RNNState *rnn, float *gains, float *vad, const float *input) {
 			ACTIVATION_RELU
 		};
 	*/
-	compute_dense(rnn->model->denoise_output, gains, rnn->denoise_gru_state);
+	//compute_dense(rnn->model->denoise_output, gains, rnn->denoise_gru_state);
 	/*
 		static const DenseLayer denoise_output = {
 			denoise_output_bias			[22],
