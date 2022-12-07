@@ -46,12 +46,14 @@ void out_fixed(fixed_point_t f) {
 		}
 		p--;
 	}
-	// for (i = 0 ; i< 16 ; i++) fprintf(f_out, "%d", tmp[i]);
+	for (i = 0 ; i < 16 ; i++) printf("%d", tmp[i]);
     for (i = 0 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
 }
 
 
 int main() {
+
+	printf("%lf\n", fixed8_to_double(double_to_fixed8(0.011)));
 
 	int size;
 	double tanh[1024];
@@ -67,7 +69,7 @@ int main() {
 		fprintf(f_out, ",\n");
 	}
 	*/
-	
+	/*
 	for (int i = 0; i < 1024; i++) {
 		tanh[i] = tanhf(fixed8_to_double(arr[i]));
 		printf("%lf\n", tanh[i]);
@@ -83,6 +85,6 @@ int main() {
 	}
 
 	fclose(f_out);
-
+*/
     return 0;
 }

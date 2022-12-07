@@ -41,6 +41,9 @@
 #include "rnn.h"
 #include "rnn_data.h"
 
+#include <stdint.h>
+
+
 #define FRAME_SIZE_SHIFT 2
 #define FRAME_SIZE (120<<FRAME_SIZE_SHIFT)
 #define WINDOW_SIZE (2*FRAME_SIZE)
@@ -451,6 +454,40 @@ void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const
 	}
 }
 
+
+#define FIXED_POINT_FRACTIONAL_BITS 8
+
+typedef uint16_t fixed_point_t;
+
+float fixed_to_double(fixed_point_t input);
+fixed_point_t double_to_fixed(float input);
+
+inline float fixed_to_double(fixed_point_t input) {
+    return ((float)input / (float)(1 << FIXED_POINT_FRACTIONAL_BITS));
+}
+
+inline fixed_point_t double_to_fixed(float input) {
+    return (fixed_point_t)(round(input * (1 << FIXED_POINT_FRACTIONAL_BITS)));
+}
+FILE *f_out;
+void out_fixed(fixed_point_t f) {
+	size_t size = sizeof(f);
+	unsigned char * p = (unsigned char *) &f;
+	p += size-1;
+	int tmp[32] = {0, };
+	int i = 0;
+	while (size--) {
+		int n;
+		for (n=0; n<8; n++) {
+			tmp[i++] = (*p & 128 ? 1 : 0);
+			*p <<= 1;
+		}
+		p--;
+	}
+    for (i = 0 ; i < 16 ; i++) fprintf(f_out, "%d", tmp[i]);
+}
+
+
 float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 	int i;
 	kiss_fft_cpx	X[FREQ_SIZE];
@@ -487,11 +524,43 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 		fclose(f_state_in);
 
 
+
+		f_out	= fopen("features_float_linux.mem", "a");
+		for (int j = 0; j < NB_FEATURES; j++) fprintf(f_out, "%lf, ", features[j]);
+				fprintf(f_out, "\n");
+		fclose(f_out);
+		
+		for (int j = 0; j < NB_FEATURES; j++) features[j] = fixed_to_double(double_to_fixed(features[j]));
+
+
+
+
 		compute_rnn(&st->rnn, gain, &vad_prob, features);
 
-		// 완성된다면, compute_rnn 대신 바이너리 파일을 읽어서 처리하자.
 
+
+
+
+
+		// 완성된다면, compute_rnn 대신 바이너리 파일을 읽어서 처리하자.
+		int size;
 		if(1) {
+
+			f_out	= fopen("features_fixed_linux.mem", "a");
+			size    = NB_FEATURES;
+			for (int j = 0; j < size; j++) {
+				out_fixed(double_to_fixed(features[j]));
+				fprintf(f_out, "\n");
+			}
+			fclose(f_out);
+			f_out	= fopen("gain_fixed_linux.mem", "a");
+			size    = NB_BANDS;
+			for (int j = 0; j < size; j++) {
+				out_fixed(double_to_fixed(gain[j]));
+				fprintf(f_out, "\n");
+			}
+			fclose(f_out);
+			
 			f_feat = fopen("input_feature_float.txt", "a");
 			f_gain = fopen("output_gain_float.txt", "a");
 
