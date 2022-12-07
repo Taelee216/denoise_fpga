@@ -225,18 +225,26 @@ void compute_gru(const GRULayer *gru, float *state, const float *input) {
 	for (i=0;i<N;i++) {
 		/* Compute output. */
 		float sum = gru->bias[2*N + i];
+		if(i == 16) printf("bias[%d] : %lf \n", 2*N + i, WEIGHTS_SCALE* (float)gru->bias[2*N + i]);
+		
 		for (j=0;j<M;j++) {
 			sum += gru->input_weights[2*N + j*stride + i]*input[j];
+			if(i == 16) {
+				printf("j[%d] gru->input_weights[2*N + j*stride + i] / input[j] = %lf / %lf \n", j, WEIGHTS_SCALE* gru->input_weights[2*N + j*stride + i], input[j]);
+				printf("j[%d] gru->input_weights[2*N + j*stride + i]*input[j] = %lf \n", j, WEIGHTS_SCALE* gru->input_weights[2*N + j*stride + i]*input[j]);
+				printf("j[%d] sum = %lf \n", j, WEIGHTS_SCALE* sum);
+			}
 		}
 		for (j=0;j<N;j++) {
 			sum += gru->recurrent_weights[2*N + j*stride + i]*state[j]*r[j];
+			if(i == 16) printf("j[%d] gru->recurrent_weights[2*N + j*stride + i]*state[j]*r[j] = %lf \n", j, WEIGHTS_SCALE* gru->recurrent_weights[2*N + j*stride + i]*state[j]*r[j]);
 		}
-		printf("sum_before[%d] : %lf \n", i, WEIGHTS_SCALE*sum);
+		printf("sum_before[%d] : WEIGHTS_SCALE*sum = %lf \n", i, WEIGHTS_SCALE*sum);
 		if (gru->activation == ACTIVATION_SIGMOID) sum = sigmoid_approx(WEIGHTS_SCALE*sum);
 		else if (gru->activation == ACTIVATION_TANH) sum = tansig_approx(WEIGHTS_SCALE*sum);
 		else if (gru->activation == ACTIVATION_RELU) sum = relu(WEIGHTS_SCALE*sum);
 		else *(int*)0=0;
-		printf("sum_after[%d] : %lf \n", i, WEIGHTS_SCALE*sum);
+		printf("sum_after[%d] : %lf \n", i, sum);
 		h[i] = z[i]*state[i] + (1-z[i])*sum;
 		//printf("h[%d]: %lf = %lf*%lf + (1-%lf)*%lf;\n", i, h[i], z[i], state[i], z[i], sum);
 	}
@@ -318,7 +326,7 @@ int main(void) {
 	DenoiseState	*st;
 	st = rnnoise_create (NULL);
 
-	float	features[NB_FEATURES] = {-2.070347, -0.484730, 0.961037, 0.588829, 0.573093, 0.462795, -0.154907, -0.374600, -0.340716, -0.058366, 0.076098, 0.253870, 0.141891, -0.007446, -0.154058, -0.070963, -0.009309, 0.079642, -0.005297, -0.169790, -0.144220, -0.003817, -2.070347, -0.484730, 0.961037, 0.588829, 0.573093, 0.462795, -2.070347, -0.484730, 0.961037, 0.588829, 0.573093, 0.462795, -1.297043, -0.913535, -0.018581, -0.036043, -0.031924, -0.049120, 1.620000, -1.250832};
+	float	features[NB_FEATURES] = {-2.070312, -0.484375, 0.960938, 0.589844, 0.574219, 0.460938, -0.156250, -0.375000, -0.339844, -0.058594, 0.074219, 0.253906, 0.140625, -0.007812, -0.152344, -0.070312, -0.007812, 0.078125, -0.003906, -0.167969, -0.144531, -0.003906, -2.070312, -0.484375, 0.960938, 0.589844, 0.574219, 0.460938, -2.070312, -0.484375, 0.960938, 0.589844, 0.574219, 0.460938, -1.296875, -0.914062, -0.019531, -0.035156, -0.031250, -0.050781, 1.621094, -1.250000};
 	float	gain[NB_BANDS];
 	float	vad_prob = 0;
 	compute_rnn(&st->rnn, gain, &vad_prob, features);
