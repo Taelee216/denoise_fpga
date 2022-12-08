@@ -469,6 +469,7 @@ inline double fixed_to_double(fixed_point_t input) {
 inline fixed_point_t double_to_fixed(double input) {
     return (fixed_point_t)(round(input * (1 << FIXED_POINT_FRACTIONAL_BITS)));
 }
+
 FILE *f_out;
 void out_fixed(fixed_point_t f) {
 	size_t size = sizeof(f);
