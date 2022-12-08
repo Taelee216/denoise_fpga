@@ -8,7 +8,7 @@ module RNN(clk, rst, gains_out);
 
 	parameter	feature_size		= 42;
 	parameter	gains_size			= 22;
-	parameter	feature_cnt			= 400;
+	parameter	feature_cnt			= 10;
 	
 	parameter	input_dense_size	= 24;
 	parameter 	vad_gru_size		= 24;
@@ -61,7 +61,7 @@ module RNN(clk, rst, gains_out);
 	
 	// I/O
 	// reg signed		[ sixteen-1 : 0]	feature				[feature_size-1:0];
-	reg signed		[ sixteen-1 : 0]	feature_full		[16800-1:0];
+	reg signed		[ sixteen-1 : 0]	feature_full		[feature_size*feature_cnt-1:0];
 	reg signed		[ sixteen-1 : 0]	gains				[gains_size-1:0];
 	reg signed		[ sixteen-1 : 0]	vad;
 
@@ -108,7 +108,7 @@ module RNN(clk, rst, gains_out);
 
 		// input feature
 		// $readmemb("feature_fixed.mem",							feature,						0, feature_size-1);
-		$readmemb("features_fixed_linux.mem",					feature_full, 0, 16800 -1);
+		$readmemb("features_fixed_linux.mem",					feature_full, 0, feature_size*feature_cnt -1);
 		$readmemb("gain_fixed.mem",                             gains_read,                     0, gains_size-1);
 		counter = 0;
 		// tan
